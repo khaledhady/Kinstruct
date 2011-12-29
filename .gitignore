@@ -7,6 +7,7 @@ Kinstruct/Debug/
 *.DS_Store
 
 *.[Oo]bj
+Kinstruct.suo
 *.exe
 *.pdb
 *.user

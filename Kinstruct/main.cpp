@@ -105,8 +105,8 @@ Mat captureDepthFrame()
 
 int main (int argc, char **argv) {
  
-	CvCapture* captureDepth = cvCaptureFromAVI("depthF.avi");
-	CvCapture* captureColor = cvCaptureFromAVI("colorF.avi");
+	CvCapture* captureDepth = cvCaptureFromAVI("depth.avi");
+	CvCapture* captureColor = cvCaptureFromAVI("color.avi");
 	cvQueryFrame(captureColor);
 	IplImage* img = 0; 
 	int nFrames = 50;
