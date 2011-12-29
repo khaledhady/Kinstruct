@@ -21,6 +21,9 @@
     <ClCompile Include="..\..\MyOpenGL\MyOpenGL\Visualizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RobustMatcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MyOpenGL\MyOpenGL\RobustMatcher.h">

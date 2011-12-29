@@ -65,6 +65,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\MyOpenGL\MyOpenGL\Visualizer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RobustMatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MyOpenGL\MyOpenGL\RobustMatcher.h" />
