@@ -37,17 +37,24 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files\Microsoft Visual Studio 10.0\VC\include\OpenCV2.2\include;C:\Program Files\Microsoft Visual Studio 10.0\VC\include\OpenCV2.2\include\opencv;C:\Program Files\Microsoft Visual Studio 10.0\VC\include\OpenCV2.2\lib;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\khaled\Desktop\vxl-1.14.0\vxl-1.14.0\core;C:\Users\khaled\Desktop\vxl-1.14.0\bin\core;C:\Users\khaled\Desktop\vxl-1.14.0\vxl-1.14.0\vcl\iso;C:\Users\khaled\Desktop\vxl-1.14.0\bin\lib;C:\Program Files\Microsoft Visual Studio 10.0\VC\include\OpenCV2.2\include;C:\Program Files\Microsoft Visual Studio 10.0\VC\include\OpenCV2.2\include\opencv;C:\Program Files\Microsoft Visual Studio 10.0\VC\include\OpenCV2.2\lib;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\khaled\Desktop\vxl-1.14.0\bin\lib\Debug;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Users\khaled\Desktop\vxl-1.14.0\bin\core;C:\Users\khaled\Desktop\vxl-1.14.0\vxl-1.14.0\vcl;C:\Users\khaled\Desktop\vxl-1.14.0\vxl-1.14.0\core;C:\Users\khaled\Desktop\vxl-1.14.0\bin\vcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;glut32.lib;C:\Program Files\OpenCV2.2\lib\opencv_core220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_highgui220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_video220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_ml220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_legacy220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_imgproc220d.lib;C:\OpenCVBuilt\lib\Debug\opencv_features2d220d.lib;C:\OpenCVBuilt\lib\Debug\opencv_calib3d220d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;glut32.lib;C:\Program Files\OpenCV2.2\lib\opencv_core220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_highgui220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_video220d.lib;C:\Users\khaled\Desktop\vxl-1.14.0\bin\lib\Debug\vnl.lib;C:\Users\khaled\Desktop\vxl-1.14.0\bin\lib\Debug\vnl_algo.lib;C:\Program Files\OpenCV2.2\lib\opencv_ml220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_legacy220d.lib;C:\Program Files\OpenCV2.2\lib\opencv_imgproc220d.lib;C:\OpenCVBuilt\lib\Debug\opencv_features2d220d.lib;C:\OpenCVBuilt\lib\Debug\opencv_calib3d220d.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;vnl.lib;vnl_algo.lib;netlib.lib;v3p_netlib.lib;vcl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\khaled\Desktop\vxl-1.14.0\bin\lib;C:\Users\khaled\Desktop\vxl-1.14.0\bin\lib\($Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -64,12 +71,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\MyOpenGL\MyOpenGL\Visualizer.cpp" />
+    <ClCompile Include="AbsoluteOrientation.cpp" />
+    <ClCompile Include="Constructor.cpp" />
+    <ClCompile Include="Frame.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RobustMatcher.cpp" />
+    <ClCompile Include="Transformation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MyOpenGL\MyOpenGL\RobustMatcher.h" />
     <ClInclude Include="..\..\MyOpenGL\MyOpenGL\Visualizer.h" />
+    <ClInclude Include="AbsoluteOrientation.h" />
+    <ClInclude Include="Constructor.h" />
+    <ClInclude Include="Frame.h" />
+    <ClInclude Include="Point3D.h" />
+    <ClInclude Include="Transformation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
