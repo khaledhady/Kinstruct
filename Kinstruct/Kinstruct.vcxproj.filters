@@ -18,9 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MyOpenGL\MyOpenGL\Visualizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RobustMatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -30,18 +27,18 @@
     <ClCompile Include="Frame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Constructor.cpp">
+    <ClCompile Include="Transformation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Transformation.cpp">
+    <ClCompile Include="HornMethod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Visualizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MyOpenGL\MyOpenGL\RobustMatcher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MyOpenGL\MyOpenGL\Visualizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AbsoluteOrientation.h">
@@ -56,7 +53,10 @@
     <ClInclude Include="Transformation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Constructor.h">
+    <ClInclude Include="HornMethod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Visualizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

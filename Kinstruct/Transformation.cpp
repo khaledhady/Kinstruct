@@ -95,24 +95,24 @@ void Transformation::invert(const Transformation *t)
 			                     t->rotation[2][2] * t->translation[2]);
 }
 
-void Transformation::mul(const Transformation *f1, const Transformation *f2) 
+void Transformation::concatenate(const Transformation *concatenated) 
 {
-	int i,j;
+  int i,j;
   double tmpRotation[3][3];
   double tmpTranslation[3];
-
+  
   for (i=0;i<3;i++) {
 		for (j=0;j<3;j++) {
-			tmpRotation[i][j]=f1->rotation[i][0]*f2->rotation[0][j] +
-	                      f1->rotation[i][1]*f2->rotation[1][j] +
-	                      f1->rotation[i][2]*f2->rotation[2][j];
+			tmpRotation[i][j]=this->rotation[i][0]*concatenated->rotation[0][j] +
+	                      this->rotation[i][1]*concatenated->rotation[1][j] +
+	                      this->rotation[i][2]*concatenated->rotation[2][j];
 		}
   }
   for(i=0; i<3; i++) 
-		tmpTranslation[i] = f1->rotation[i][0]*f2->translation[0] +
-	                      f1->rotation[i][1]*f2->translation[1] +
-	                      f1->rotation[i][2]*f2->translation[2] +
-	                      f1->translation[i];
+		tmpTranslation[i] = this->rotation[i][0]*concatenated->translation[0] +
+	                      this->rotation[i][1]*concatenated->translation[1] +
+	                      this->rotation[i][2]*concatenated->translation[2] +
+	                      this->translation[i];
 
 	int sz = 3*sizeof(double);
 	memcpy(this->translation,tmpTranslation,sz);
@@ -120,3 +120,4 @@ void Transformation::mul(const Transformation *f1, const Transformation *f2)
 	memcpy(this->rotation[1],&(tmpRotation[1]),sz);
 	memcpy(this->rotation[2],&(tmpRotation[2]),sz);
 }
+

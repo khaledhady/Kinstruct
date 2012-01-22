@@ -10,11 +10,11 @@
 using namespace cv;
 using namespace std;
 
-class Constructor
+class HornMethod
 {
 
 	public:
-		Constructor();
+		HornMethod();
 		void getTransformation(vector<Point3f*> setA, vector<Point3f*> setB, Transformation *Result );
 		void selfTest();
 

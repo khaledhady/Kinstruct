@@ -70,22 +70,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\MyOpenGL\MyOpenGL\Visualizer.cpp" />
     <ClCompile Include="AbsoluteOrientation.cpp" />
-    <ClCompile Include="Constructor.cpp" />
+    <ClCompile Include="HornMethod.cpp" />
     <ClCompile Include="Frame.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RobustMatcher.cpp" />
     <ClCompile Include="Transformation.cpp" />
+    <ClCompile Include="Visualizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MyOpenGL\MyOpenGL\RobustMatcher.h" />
-    <ClInclude Include="..\..\MyOpenGL\MyOpenGL\Visualizer.h" />
     <ClInclude Include="AbsoluteOrientation.h" />
-    <ClInclude Include="Constructor.h" />
+    <ClInclude Include="HornMethod.h" />
     <ClInclude Include="Frame.h" />
     <ClInclude Include="Point3D.h" />
     <ClInclude Include="Transformation.h" />
+    <ClInclude Include="Visualizer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,7 +13,7 @@ class Transformation
 		void applyToPoint(Point3d *point);
 		void apply(Point3f *p, Point3f *pTransformed);
 		void invert(const Transformation *t) ;
-		void mul(const Transformation *f1, const Transformation *f2);
+		void concatenate(const Transformation *concatenated);
 
 		double rotation[3][3];
 		double translation[3];

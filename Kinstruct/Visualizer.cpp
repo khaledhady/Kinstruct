@@ -41,16 +41,16 @@ void Visualizer::init(float initialXpos, float initialYpos, float initialZpos, f
 void Visualizer::addPoints(GLfloat *newPoints, GLfloat *pointsColors, int noNewPixels)
 {
 	GLfloat *newVertices = new GLfloat[(noPixels + noNewPixels) * 3];
-	if(vertices != 0 )
-		memcpy(newVertices, vertices, noPixels * 3);
+	if(vertices != NULL )
+		memcpy(newVertices, vertices, noPixels * 3 * sizeof FLOAT);
 	
 	memcpy(newVertices + noPixels * 3, newPoints, noNewPixels * 3 * sizeof FLOAT);
 	delete(vertices);
 	vertices = newVertices;
 
 	GLfloat *newColors = new GLfloat[(noPixels + noNewPixels) * 3];
-	if(colors !=0 )
-		memcpy(newColors, colors, noPixels * 3);
+	if(colors != NULL )
+		memcpy(newColors, colors, noPixels * 3 * sizeof FLOAT);
 	memcpy(newColors + noPixels * 3, pointsColors, noNewPixels * 3 * sizeof FLOAT);
 	delete(colors);
 	colors = newColors;
@@ -219,3 +219,43 @@ void Visualizer::mouseMovement(int x, int y) {
     yrot += (float) diffx / 10;    //set the xrot to yrot with the addition of the difference in the x position
 	display();
 }
+
+void Visualizer::addImageFrame(Mat *color, Mat *depth)
+{
+	int noPixels = color->rows * color->cols;
+	GLfloat *vertices = new GLfloat[noPixels * 3];
+	GLfloat *colors = new GLfloat[noPixels * 3];
+		
+	
+	int rowsRGB = color->rows;
+	int colsRGB = color->cols;
+	int pixelIndex = 0;
+	for (int k = 0; k < rowsRGB ; k++) {
+		for (int m = 0; m < colsRGB; m++) {
+			int bit0 = depth->at<cv::Vec3b>(k,m)[0];
+			int bit1 = depth->at<cv::Vec3b>(k,m)[1];
+			int depth = (bit0 | bit1 << 8 );
+				
+			double blue = color->at<cv::Vec3b>(k,m)[0];
+			double green = color->at<cv::Vec3b>(k,m)[1];
+			double red = color->at<cv::Vec3b>(k,m)[2];
+
+			vertices[pixelIndex] = m;
+			vertices[pixelIndex + 1] = -k;
+			vertices[pixelIndex + 2] = depth / 100;
+
+			colors[pixelIndex] = red / 255;
+			colors[pixelIndex + 1] = green / 255;
+			colors[pixelIndex + 2] = blue / 255;
+				
+			
+			pixelIndex += 3;
+			
+		}
+	}
+	Visualizer::addPoints(vertices, colors, noPixels);
+	delete vertices;
+	delete colors;
+}
+
+
