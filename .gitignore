@@ -1,5 +1,6 @@
 *.avi
 *.opensdf
+*.suo
 Debug/
 Kinstruct/Debug/
 #OS junk files
