@@ -34,6 +34,7 @@ public:
 	           float initialYrot, float initialAngle);
 	static void start(int argc, char **argv);
 	static void addPoints(GLfloat *newPoints, GLfloat *pointsColors, int noNewPixels);
+	static void addImageFrame(Mat *color, Mat *depth);
 
 private:
 	static GLfloat *vertices;
