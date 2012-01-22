@@ -137,7 +137,7 @@ void HornMethod::getTransformation(vector<Point3f*> setA, vector<Point3f*> setB,
   CvMat* eigenVec = cvCreateMat(4, 4, DataType<double>::type);
   CvMat* eigenVal  =cvCreateMat(4, 1, DataType<double>::type);
   cvEigenVV(N, eigenVec, eigenVal);
-  Transformation transform;
+  Transformation transform(false);
   transform.setRotation( -1 * cvmGet(eigenVec, 0, 0), -1 * cvmGet(eigenVec, 0, 1), -1 * cvmGet(eigenVec, 0, 2), -1 * cvmGet(eigenVec, 0, 3), true );
   
   transform.applyToPoint(&meanA);

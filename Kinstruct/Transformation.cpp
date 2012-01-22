@@ -1,12 +1,22 @@
 #include "Transformation.h"
 
-Transformation::Transformation()
+Transformation::Transformation(bool identity)
 {
-	for(int i = 0; i < 3; i++)
-		for(int j = 0; j < 3; j++)
-			this->rotation[i][j] = 0;
-	for(int i = 0; i < 3; i++)
-		this->translation[i] = 0;
+	if(identity)
+	{
+		
+		this->setRotation(1, 0, 0, 0, true);
+				
+		for(int i = 0; i < 3; i++)
+			this->translation[i] = 0;
+	}else
+	{
+		for(int i = 0; i < 3; i++)
+			for(int j = 0; j < 3; j++)
+				this->rotation[i][j] = 0;
+		for(int i = 0; i < 3; i++)
+			this->translation[i] = 0;
+	}
 }
 
 void Transformation::setRotation(double s, double qx, double qy, double qz, bool normalizeQuaternion)
@@ -58,7 +68,38 @@ void Transformation::applyToPoint(Point3d *point)
 
 }
 
-void Transformation::apply(Point3f *p, Point3f *pTransformed)
+void Transformation::applyToFrame(Mat *color, Mat *depth, GLfloat *vertices, GLfloat *colors)
+{
+	int pixelIndex = 0;
+	for (int k = 0; k < color->rows ; k++) {
+		for (int m = 0; m < color->cols; m++) {
+			
+			int bit0 = depth->at<cv::Vec3b>(k,m)[0];
+			int bit1 = depth->at<cv::Vec3b>(k,m)[1];
+			double z = (bit0 | bit1 << 8 );
+				
+			double blue = color->at<cv::Vec3b>(k,m)[0];
+			double green = color->at<cv::Vec3b>(k,m)[1];
+			double red = color->at<cv::Vec3b>(k,m)[2];
+
+			Point3d myPoint(m, k, z / 100);
+			this->applyToPoint(&myPoint);
+
+			vertices[pixelIndex] = myPoint.x;
+			vertices[pixelIndex + 1] = -myPoint.y;
+			vertices[pixelIndex + 2] = myPoint.z;
+			colors[pixelIndex] = red / 255;
+			colors[pixelIndex + 1] = green / 255;
+			colors[pixelIndex + 2] = blue / 255;
+			pixelIndex += 3;
+		}
+	}
+
+	
+
+}
+
+void Transformation::applyToPoint(Point3f *p, Point3f *pTransformed)
 {
 	double x, y, z;
 

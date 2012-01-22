@@ -8,13 +8,15 @@
 #include "Visualizer.h"
 #include "RobustMatcher.h"
 #include "HornMethod.h"
+#define START_FRAME 100
+#define STEP 50
+#define LAST_FRAME 199
 using namespace cv;
 using namespace std;
 
 /* Using the GLUT library for the base windowing setup */
 #include <GL/glut.h>
 #include <GL/gl.h>
-#include <GL/glut.h>
 #include <math.h>
 void alignFrames(Mat *colorA, Mat *colorB, Mat *depthA, Mat *depthB, Transformation *inverse)
 {
@@ -68,7 +70,7 @@ void alignFrames(Mat *colorA, Mat *colorB, Mat *depthA, Mat *depthB, Transformat
 	}
 
 
-	Transformation result;
+	Transformation result(false);
 	HornMethod hornMethod;
 	hornMethod.getTransformation(setA, setB, &result);
 	inverse->invert(&result);
@@ -83,90 +85,52 @@ int main (int argc, char **argv) {
  
 	CvCapture* captureDepth = cvCaptureFromAVI("depth.avi");
 	CvCapture* captureColor = cvCaptureFromAVI("color.avi");
-	for(int i = 0; i < 100; i++ )
+
+	for(int i = 0; i < START_FRAME; i++ )
 	{
 		cvQueryFrame(captureColor);
 		cvQueryFrame(captureDepth);
 	}
 	
-		IplImage* img = 0; 
+	IplImage* img = 0; 
+	img = cvQueryFrame(captureColor);	//retrieve the captured frame
+	Mat imgA(img,true);
+	img = cvQueryFrame(captureDepth);	//retrieve the captured frame
+	Mat depthA(img,true);
+
+	int frameNo = START_FRAME;
+	Transformation *global = new Transformation(true);
+	Visualizer::init(200,150, 600, 0, 0, 0);
+	Visualizer::addImageFrame(&imgA, &depthA);
+	while(frameNo <= LAST_FRAME)
+	{
 		
-		
-		img = cvQueryFrame(captureColor);	//retrieve the captured frame
-
-		IplImage* gray1 = cvCreateImage( cvGetSize( img ), 8, 1 ); 
-		cvCvtColor(img,gray1,CV_BGR2GRAY);
-		Mat img1(gray1,true);
-		Mat imgA(img,true);
-
-		img = cvQueryFrame(captureDepth);	//retrieve the captured frame
-	
-		Mat depthA(img,true);
-
-
-		for(int j = 0; j < 30; j++)
+		for(int j = 0; j < STEP; j++)
 		{
 			cvQueryFrame(captureColor);
 			cvQueryFrame(captureDepth);
 		}
+
 		img = cvQueryFrame(captureColor);	//retrieve the captured frame
-		IplImage* gray2 = cvCreateImage( cvGetSize( img ), 8, 1 ); 
-		cvCvtColor(img,gray2,CV_BGR2GRAY);
-		Mat img2(gray2,true);
 		Mat imgB(img,true);
-
-	
 		Mat depthB = cvQueryFrame(captureDepth);
-		Transformation *inverse = new Transformation;
+
+	    Transformation *inverse = new Transformation(false);
 		alignFrames(&imgA, &imgB, &depthA, &depthB, inverse);
-
-
-		Visualizer::init(200,150, 600, 0, 0, 0);
-	
 		int noPixels = 240 * 320;
-	
-			GLfloat *vertices = new GLfloat[noPixels * 3];
-			GLfloat *colors = new GLfloat[noPixels * 3];
-	
-			Visualizer::addImageFrame(&imgA, &depthA);
-		int pixelIndex = 0;
-		int max = 0;
-		for (int k = 0; k < 240 ; k++) {
-			for (int m = 0; m < 320; m++) {
-				int bit0 = depthB.at<cv::Vec3b>(k,m)[0];
-				int bit1 = depthB.at<cv::Vec3b>(k,m)[1];
-				double depth = (bit0 | bit1 << 8 );
-				
-				
-				double blue = imgB.at<cv::Vec3b>(k,m)[0];
-				double green = imgB.at<cv::Vec3b>(k,m)[1];
-				double red = imgB.at<cv::Vec3b>(k,m)[2];
-
-
-				Point3d myPoint(m, k, depth / 100);
-				inverse->applyToPoint(&myPoint);
-			
-			/*	
-				if(myPoint.z > 260)
-				{
-					red = 255;
-					green = 0;
-					blue = 0;
-					break;
-				}*/
-				vertices[pixelIndex] = myPoint.x;
-				vertices[pixelIndex + 1] = -myPoint.y;
-				vertices[pixelIndex + 2] = myPoint.z;
-				colors[pixelIndex] = red / 255;
-				colors[pixelIndex + 1] = green / 255;
-				colors[pixelIndex + 2] = blue / 255;
-				pixelIndex += 3;
-			}
-		}
+		GLfloat *vertices = new GLfloat[noPixels * 3];
+		GLfloat *colors = new GLfloat[noPixels * 3];
+		global->concatenate(inverse);
+		global->applyToFrame(&imgB, &depthB, vertices, colors);
 		Visualizer::addPoints(vertices, colors, noPixels);
 		
-	
-	cout << max;
+		imgB.copyTo(imgA);
+		depthB.copyTo(depthA);
+		
+		frameNo += STEP;
+		break;
+	}
+
 	Visualizer::start(argc, argv);
 	
     return 0;
