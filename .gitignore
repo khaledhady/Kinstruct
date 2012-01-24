@@ -5,6 +5,7 @@ Kinstruct/Debug/
 #OS junk files
 [Tt]humbs.db
 *.DS_Store
+*.pcd
 
 *.[Oo]bj
 Kinstruct.suo
