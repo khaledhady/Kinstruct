@@ -5,7 +5,7 @@
 #include <opencv/cv.h>
 #include <opencv/cxcore.h>
 #include <opencv/highgui.h>
-using namespace cv;
+
 using namespace std;
 
 /* Using the GLUT library for the base windowing setup */

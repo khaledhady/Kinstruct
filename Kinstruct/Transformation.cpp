@@ -49,7 +49,7 @@ void Transformation::setTranslation(double x, double y, double z)
 	this->translation[2] = z;
 }
 
-void Transformation::applyToPoint(Point3d *point)
+void Transformation::applyToPoint(cv::Point3d *point)
 {
 	point->x = this->rotation[0][0] * point->x +
 			   this->rotation[0][1] * point->y +
@@ -68,30 +68,35 @@ void Transformation::applyToPoint(Point3d *point)
 
 }
 
-void Transformation::applyToFrame(Mat *color, Mat *depth, GLfloat *vertices, GLfloat *colors)
+void Transformation::applyToFrame(cv::Mat *color, cv::Mat *depth, pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
 {
 	int pixelIndex = 0;
+	cloud->points.resize (color->rows * color->cols);
+
 	for (int k = 0; k < color->rows ; k++) {
 		for (int m = 0; m < color->cols; m++) {
 			
 			int bit0 = depth->at<cv::Vec3b>(k,m)[0];
-			int bit1 = depth->at<cv::Vec3b>(k,m)[1];
-			double z = (bit0 | bit1 << 8 );
+			//int bit1 = depth->at<cv::Vec3b>(k,m)[1];
+			//double z = (bit0 | bit1 << 8 );
 				
-			double blue = color->at<cv::Vec3b>(k,m)[0];
-			double green = color->at<cv::Vec3b>(k,m)[1];
-			double red = color->at<cv::Vec3b>(k,m)[2];
+			int blue = color->at<cv::Vec3b>(k,m)[0];
+			int green = color->at<cv::Vec3b>(k,m)[1];
+			int red = color->at<cv::Vec3b>(k,m)[2];
 
-			Point3d myPoint(m, k, z / 100);
+			cv::Point3d myPoint(m, k, bit0 * 3500 / 2550);
 			this->applyToPoint(&myPoint);
 
-			vertices[pixelIndex] = myPoint.x;
-			vertices[pixelIndex + 1] = -myPoint.y;
-			vertices[pixelIndex + 2] = myPoint.z;
-			colors[pixelIndex] = red / 255;
-			colors[pixelIndex + 1] = green / 255;
-			colors[pixelIndex + 2] = blue / 255;
-			pixelIndex += 3;
+			cloud->points[pixelIndex].x = myPoint.x;
+			cloud->points[pixelIndex].y = myPoint.y;
+			cloud->points[pixelIndex].z = myPoint.z;
+			uint32_t rgb = (static_cast<uint32_t>(red) << 16 |
+              static_cast<uint32_t>(green) << 8 | static_cast<uint32_t>(blue));
+			cloud->points[pixelIndex].rgb = *reinterpret_cast<float*>(&rgb);
+			
+			pixelIndex++;
+
+			
 		}
 	}
 
@@ -99,7 +104,7 @@ void Transformation::applyToFrame(Mat *color, Mat *depth, GLfloat *vertices, GLf
 
 }
 
-void Transformation::applyToPoint(Point3f *p, Point3f *pTransformed)
+void Transformation::applyToPoint(cv::Point3f *p, cv::Point3f *pTransformed)
 {
 	double x, y, z;
 

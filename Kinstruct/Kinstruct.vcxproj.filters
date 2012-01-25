@@ -27,18 +27,12 @@
     <ClCompile Include="HornMethod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Visualizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Transformation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HornMethod.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Visualizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RobustMatcher.h">
