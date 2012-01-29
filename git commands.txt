@@ -1,0 +1,10 @@
+git clone git@github.com:khaledhady/Kinstruct.git
+
+
+git pull
+
+git add --all
+
+git commit -m "my comment"
+
+git push origin master
