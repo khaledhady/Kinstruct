@@ -8,6 +8,9 @@
 #include "Transformation.h"
 #include <math.h>
 
+#ifndef HORN
+#define HORN
+
 using namespace std;
 
 class HornMethod
@@ -20,3 +23,5 @@ class HornMethod
 
 	private:
 };
+
+#endif

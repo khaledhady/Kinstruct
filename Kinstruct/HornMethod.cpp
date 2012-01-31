@@ -37,16 +37,17 @@ void HornMethod::getTransformation(vector<cv::Point3f> *setA, vector<cv::Point3f
 		
 
 	cv::Point3d meanA(0, 0, 0), meanB(0, 0, 0);
-
+	//cout << "ok" << endl;
 	for(int i = 0; i < pairNum; i++)
 	{
 		meanA.x += setA->at(i).x;
 		meanA.y += setA->at(i).y;
 		meanA.z += setA->at(i).z;
-
+		//cout << i << ", " << setA->at(i).z << endl;
 		meanB.x += setB->at(i).x;
 		meanB.y += setB->at(i).y;
 		meanB.z += setB->at(i).z;
+		//cout << i << ", " << setB->at(i).z << endl;
 	}
 	
 	meanA.x = meanA.x / pairNum;

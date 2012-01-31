@@ -72,19 +72,21 @@ void Transformation::applyToFrame(cv::Mat *color, cv::Mat *depth, pcl::PointClou
 {
 	int pixelIndex = 0;
 	cloud->points.resize (color->rows * color->cols);
+	cloud->width = color->cols;
+	cloud->height = color->rows;
 
 	for (int k = 0; k < color->rows ; k++) {
 		for (int m = 0; m < color->cols; m++) {
 			
-			int bit0 = depth->at<cv::Vec3b>(k,m)[0];
+			//int bit0 = depth->at<cv::Vec3b>(k,m)[0];
 			//int bit1 = depth->at<cv::Vec3b>(k,m)[1];
-			//double z = (bit0 | bit1 << 8 );
+			float z = depth->at<float>(k,m);
 				
 			int blue = color->at<cv::Vec3b>(k,m)[0];
 			int green = color->at<cv::Vec3b>(k,m)[1];
 			int red = color->at<cv::Vec3b>(k,m)[2];
 
-			cv::Point3d myPoint(m, k, bit0 * 3500 / 2550);
+			cv::Point3d myPoint(m, k, z);
 			this->applyToPoint(&myPoint);
 
 			cloud->points[pixelIndex].x = myPoint.x;

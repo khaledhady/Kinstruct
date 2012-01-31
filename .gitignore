@@ -6,6 +6,7 @@ Kinstruct/Debug/
 [Tt]humbs.db
 *.DS_Store
 *.pcd
+*.ply
 
 *.[Oo]bj
 Kinstruct.suo

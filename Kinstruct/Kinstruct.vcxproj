@@ -71,11 +71,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HornMethod.cpp" />
+    <ClCompile Include="icp.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="openni_reader.cpp" />
+    <ClCompile Include="openni_writer.cpp" />
     <ClCompile Include="RobustMatcher.cpp" />
+    <ClCompile Include="SVD.cpp" />
     <ClCompile Include="Transformation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Commons.h" />
     <ClInclude Include="HornMethod.h" />
     <ClInclude Include="RobustMatcher.h" />
     <ClInclude Include="Transformation.h" />

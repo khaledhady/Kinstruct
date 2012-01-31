@@ -1,10 +1,10 @@
-#include <stdio.h>
-#include <iostream>
-#include <stdlib.h>
-#include <windows.h>
-#include <opencv/cv.h>
-#include <opencv/cxcore.h>
-#include <opencv/highgui.h>
+#ifndef COMMONS
+#define COMMONS
+#include "Commons.h"
+#endif
+
+#ifndef MATCHER
+#define MATCHER
 
 using namespace std;
 
@@ -102,3 +102,5 @@ class RobustMatcher {
 						   const std::vector<cv::KeyPoint>& keypoints2,
 						   std::vector<cv::DMatch>& outMatches);
 };
+
+#endif

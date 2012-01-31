@@ -1,11 +1,7 @@
-#include <math.h>
-#include <opencv/cv.h>
-#include <opencv/cxcore.h>
-#include <opencv/highgui.h>
-#include <GL/glut.h>
-#include <GL/gl.h>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
+#include "Commons.h"
+
+#ifndef TRANSFORMATION
+#define TRANSFORMATION
 
 
 class Transformation
@@ -28,3 +24,5 @@ class Transformation
 	/*	float rotation[3][3];
 		float translation[3];*/
 };
+
+#endif
