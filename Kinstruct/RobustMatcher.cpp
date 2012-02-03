@@ -2,7 +2,6 @@
 
 	RobustMatcher::RobustMatcher() : ratio(0.65f), refineF(true), confidence(0.1), distance(1.0) {
 		// SURF is the default feature
-		//detector = new cv::GoodFeaturesToTrackDetector(20, 0.01, 10 );
 		detector= new cv::SurfFeatureDetector();
 		extractor= new cv::SurfDescriptorExtractor();
 	}

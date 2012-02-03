@@ -27,16 +27,10 @@
     <ClCompile Include="HornMethod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="icp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="openni_reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="openni_writer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SVD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -169,3 +169,44 @@ void Transformation::concatenate(const Transformation *concatenated)
 	memcpy(this->rotation[2],&(tmpRotation[2]),sz);
 }
 
+void Transformation::concatenate(Eigen::Matrix4f *concatenated)
+{
+  int i,j;
+  double tmpRotation[3][3];
+  double tmpTranslation[3];
+  
+  for (i=0;i<3;i++) {
+		for (j=0;j<3;j++) {
+			tmpRotation[i][j]=this->rotation[i][0] * (*concatenated)(0,j) +
+	                      this->rotation[i][1] * (*concatenated)(1,j) +
+	                      this->rotation[i][2] * (*concatenated)(2,j);
+		}
+  }
+  for(i=0; i<3; i++) 
+		tmpTranslation[i] = this->rotation[i][0] * (*concatenated)(0,3) +
+	                      this->rotation[i][1] * (*concatenated)(1,3) +
+	                      this->rotation[i][2] * (*concatenated)(2,3) +
+	                      this->translation[i];
+
+	int sz = 3*sizeof(double);
+	memcpy(this->translation,tmpTranslation,sz);
+	memcpy(this->rotation[0],&(tmpRotation[0]),sz);
+	memcpy(this->rotation[1],&(tmpRotation[1]),sz);
+	memcpy(this->rotation[2],&(tmpRotation[2]),sz);
+}
+
+void Transformation::get4X4Matrix(Eigen::Matrix4f *fullTransformation)
+{
+	for(int i = 0; i < 3; i++)
+		for(int j = 0; j < 3; j++)
+			(*fullTransformation)(i,j) = this->rotation[i][j];
+	for(int i = 0; i < 3; i++)
+		(*fullTransformation)(i,3) = this->translation[i];
+	(*fullTransformation)(3,0) = 0;
+	(*fullTransformation)(3,1) = 0;
+	(*fullTransformation)(3,2) = 0;
+	(*fullTransformation)(3,3) = 1;
+
+
+}
+

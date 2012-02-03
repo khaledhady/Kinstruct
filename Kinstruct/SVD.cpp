@@ -2,7 +2,7 @@
 //#include <pcl/point_types.h>
 //#include <pcl/point_cloud.h>
 //#include <pcl/point_representation.h>
-//
+//#include <pcl/visualization/cloud_viewer.h>
 //#include <pcl/io/pcd_io.h>
 //#include <pcl/ros/conversions.h>
 //#include <pcl/keypoints/uniform_sampling.h>
@@ -86,7 +86,7 @@
 //  FPFHEstimation<PointXYZRGB, Normal, FPFHSignature33> fpfh_est;
 //  fpfh_est.setInputCloud (keypoints_src);
 //  fpfh_est.setInputNormals (normals_src);
-//  fpfh_est.setRadiusSearch (0.05); // 1m
+//  fpfh_est.setRadiusSearch (0.1); // 1m
 //  fpfh_est.setSearchSurface (src);
 //  fpfh_est.compute (fpfhs_src);
 //
@@ -97,7 +97,7 @@
 //
 //  // For debugging purposes only: uncomment the lines below and use pcd_viewer to view the results, i.e.:
 //  // pcd_viewer fpfhs_src.pcd 
-//  /*PointCloud2 s, t, out;
+// /* PointCloud2 s, t, out;
 //  toROSMsg (*src, s); toROSMsg (fpfhs_src, t); concatenateFields (s, t, out);
 //  savePCDFile ("fpfhs_src.pcd", out);
 //  toROSMsg (*tgt, s); toROSMsg (fpfhs_tgt, t); concatenateFields (s, t, out);
@@ -183,20 +183,20 @@
 //main (int argc, char** argv)
 //{
 //  // Parse the command line arguments for .pcd files
-//  /*std::vector<int> p_file_indices;
-//  p_file_indices = parse_file_extension_argument (argc, argv, ".pcd");
-//  if (p_file_indices.size () != 2)
-//  {
-//    print_error ("Need one input source PCD file and one input target PCD file to continue.\n");
-//    print_error ("Example: %s source.pcd target.pcd\n", argv[0]);
-//    return (-1);
-//  }
-//*/
-//  // Load the files
+//  //std::vector<int> p_file_indices;
+//  //p_file_indices = parse_file_extension_argument (argc, argv, ".pcd");
+//  //if (p_file_indices.size () != 2)
+//  //{
+//  //  print_error ("Need one input source PCD file and one input target PCD file to continue.\n");
+//  //  print_error ("Example: %s source.pcd target.pcd\n", argv[0]);
+//  //  return (-1);
+//  //}
+//
+//  //// Load the files
 //  //print_info ("Loading %s as source and %s as target...\n", argv[p_file_indices[0]], argv[p_file_indices[1]]);
 //  src.reset (new PointCloud<PointXYZRGB>);
 //  tgt.reset (new PointCloud<PointXYZRGB>);
-//  if (loadPCDFile ("1 (2).pcd", *src) == -1 || loadPCDFile ("2 (2).pcd", *tgt) == -1)
+//  if (loadPCDFile ("floor2.pcd", *src) == -1 || loadPCDFile ("floor1.pcd", *tgt) == -1)
 //  {
 //    print_error ("Error reading the input files!\n");
 //    return (-1);
@@ -208,9 +208,14 @@
 //
 //  std::cerr << transform << std::endl;
 //  // Transform the data and write it to disk
-//  PointCloud<PointXYZRGB> output;
-//  transformPointCloud (*src, output, transform);
-//  output += *tgt;
-//  savePCDFileBinary ("source_transformed.pcd", output);
+//  pcl::PointCloud<pcl::PointXYZRGB>::Ptr output (new pcl::PointCloud<pcl::PointXYZRGB>);
+//  transformPointCloud (*src, *output, transform);
+//  *output += *tgt;
+//   pcl::visualization::CloudViewer viewer ("Simple Cloud Viewer");
+//   viewer.showCloud (output);
+//   while (!viewer.wasStopped ())
+//   {
+//   }
+//  savePCDFileBinary ("source_transformed.pcd", *output);
 //}
 ///* ]--- */
