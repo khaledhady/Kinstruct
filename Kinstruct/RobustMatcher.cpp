@@ -1,6 +1,6 @@
 #include "RobustMatcher.h"
 
-	RobustMatcher::RobustMatcher() : ratio(0.65f), refineF(true), confidence(0.1), distance(1.0) {
+	RobustMatcher::RobustMatcher() : ratio(0.65f), refineF(true), confidence(0.1), distance(1) {
 		// SURF is the default feature
 		detector= new cv::SurfFeatureDetector();
 		extractor= new cv::SurfDescriptorExtractor();
@@ -54,14 +54,14 @@
 		// 3. Remove matches for which NN ratio is
 		// > than threshold
 		// clean image 1 -> image 2 matches
-		int removed = ratioTest(matches1);
-		// clean image 2 -> image 1 matches
-		removed= ratioTest(matches2);
+		//int removed = ratioTest(matches1);
+		//// clean image 2 -> image 1 matches
+		//removed= ratioTest(matches2);
 		// 4. Remove non-symmetrical matches
 		std::vector<cv::DMatch> symMatches;
 		symmetryTest(matches1,matches2,symMatches);
 		// 5. Validate matches using RANSAC
-		cv::Mat fundemental= ransacTest(symMatches,
+		cv::Mat fundemental = ransacTest(symMatches,
 		keypoints1, keypoints2, matches);
 		// return the found fundemental matrix
 		return fundemental;
@@ -219,9 +219,9 @@
 	points2.push_back(cv::Point2f(x,y));
 	}
 	// Compute 8-point F from all accepted matches
-	fundemental= cv::findFundamentalMat(
-	cv::Mat(points1),cv::Mat(points2), // matches
-	CV_FM_8POINT); // 8-point method
+	//fundemental= cv::findFundamentalMat(
+	//cv::Mat(points1),cv::Mat(points2), // matches
+	//CV_FM_8POINT); // 8-point method
 	}
 	return fundemental;
 	}

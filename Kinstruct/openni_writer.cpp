@@ -428,12 +428,12 @@
 //		}
 //		else if(noFrames == 1){
 //			cloud2 = deep_copy;
-//			main1();
+//			//main1();
 //		}else{
 //			cloud = cloud2;
 //			cloud2 = deep_copy;
 //			
-//			main1();
+//			//main1();
 //		}
 //		noFrames++;
 //		/*char fileName[20];
@@ -444,9 +444,9 @@
 //		tmp << noFrames << ".pcd";
 //		
 //		//pcl::io::savePCDFileASCII(fileName, *globalcloud);
-//		pcl::io::savePCDFileBinary(tmp.str() , *globalcloud);
-//		if(noFrames == 5)
-//			pcl::io::savePLYFile("room.ply", *result);
+//		pcl::io::savePCDFileBinary(tmp.str() , *cloud);
+//		/*if(noFrames == 5)
+//			pcl::io::savePLYFile("room.ply", *result);*/
 //		saveLock.unlock();
 //
 //	char str[512];
@@ -530,213 +530,3 @@
 //	return 0;
 //}
 //
-//
-//
-////
-////
-////
-////#include <iostream>
-////#include <pcl/io/pcd_io.h>
-////#include <pcl/point_types.h>
-////#include <pcl/io/openni_grabber.h>
-////#include <pcl/visualization/cloud_viewer.h>
-////#include <boost/thread.hpp>
-////#include <boost/date_time.hpp>
-////#include <pcl/registration/icp.h>
-////#include <pcl/filters/passthrough.h>
-////
-////#ifdef WIN32
-////# define sleep(x) Sleep((x)*1000) 
-////#endif
-////pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr globalCloud;
-////pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr first;
-////pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr second;
-//////pcl::PointCloud<pcl::PointXYZRGB>::Ptr firstCloud;
-//////pcl::PointCloud<pcl::PointXYZRGB>::Ptr secondCloud;
-////boost::mutex saveCloud;
-////int noFrames = 0;
-////
-////
-////
-////bool update2;
-////boost::mutex updateModelMutex2;
-////
-////Eigen::Matrix4f getICPTransformation(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in , pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_out  )
-////{
-//// 
-////	pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-////  icp.setInputCloud(cloud_in);
-////  icp.setInputTarget(cloud_out);
-////  
-////  pcl::PointCloud<pcl::PointXYZRGB> Final;
-////  icp.setMaxCorrespondenceDistance(0.5);
-////  icp.setRANSACOutlierRejectionThreshold(0.1);
-////  icp.setTransformationEpsilon(0.001);
-////  icp.align(Final);
-////  std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
-////  //std::cout << icp.getFinalTransformation() << std::endl;
-////
-////  return icp.getFinalTransformation();
-////}
-////
-////void visualize2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)  
-////{  
-////	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudOut (new pcl::PointCloud<pcl::PointXYZRGB> ());
-////	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-////	viewer->setBackgroundColor (0, 0, 0);
-////	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
-////	viewer->addPointCloud<pcl::PointXYZRGB> (cloud, rgb, "sample cloud");
-////	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud");
-////	viewer->addCoordinateSystem (1.0);
-////	viewer->resetCameraViewpoint("sample cloud");
-////	/*pcl::octree::PointCloudCompression<pcl::PointXYZRGB>* PointCloudDecoder;
-////	PointCloudDecoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> ();*/
-////
-////	while (!viewer->wasStopped ())
-////	{
-////		viewer->spinOnce (100);
-////	  
-////		// output pointcloud
-////		/*pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudOut (new pcl::PointCloud<pcl::PointXYZRGB> ());*/
-////
-////		/*boost::mutex::scoped_lock updateLock(updateModelMutex);
-////		
-////		if(update)
-////		{
-////			viewer->updatePointCloud(cloud, "sample cloud");
-////			update = false;
-////		}
-////		updateLock.unlock();
-////     */
-////		// decompress point cloud
-////	  
-////		// PointCloudDecoder->decodePointCloud (compressedData, cloudOut);
-////		//boost::this_thread::sleep (boost::posix_time::microseconds (100000));
-////	}   
-////    std::cout << "Worker: finished" << std::endl;  
-////} 
-////
-////void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void)
-////{
-////	  
-////	if (event.getKeySym () == "r" && event.keyDown ())
-////	{
-////		std::cout << "r was pressed => removing all text" << std::endl;
-////		
-////		
-////
-////		boost::mutex::scoped_lock saveLock(saveCloud);
-////		if(noFrames == 0)
-////			first = globalCloud ; 
-////		else if(noFrames == 1)
-////		{
-////			second = globalCloud ;
-////
-////			pcl::PointCloud<pcl::PointXYZRGB>::Ptr firstCloud (new pcl::PointCloud<pcl::PointXYZRGB>( *first ) );
-////		    pcl::PointCloud<pcl::PointXYZRGB>::Ptr secondCloud (new pcl::PointCloud<pcl::PointXYZRGB>( *second ) );
-////			pcl::PointCloud<pcl::PointXYZRGB>::Ptr firstCloudClean (new pcl::PointCloud<pcl::PointXYZRGB>( *first ) );
-////		    pcl::PointCloud<pcl::PointXYZRGB>::Ptr secondCloudClean (new pcl::PointCloud<pcl::PointXYZRGB>( *second ) );
-////			pcl::PassThrough<pcl::PointXYZRGB> pass; // can do this without parameters
-////			pass.setInputCloud( firstCloud );
-////			pass.filter( *firstCloudClean );
-////			pass.setInputCloud( secondCloud );
-////			pass.filter( *secondCloudClean );
-////
-////		
-////			/*Eigen::Matrix4f tranfromationMAt2 ; 
-////			  pcl::registration::TransformationEstimationSVD< pcl::PointXYZRGB ,  pcl::PointXYZRGB > SVNTransformer ; 
-////			  SVNTransformer.estimateRigidTransformation( *firstCloud , *secondCloud , tranfromationMAt2);*/
-////
-////			Eigen::Matrix4f tranfromationMAt2  = getICPTransformation(firstCloudClean , secondCloudClean);
-////			  pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
-////
-////			  pcl::transformPointCloud(*secondCloud , *transformed , tranfromationMAt2 );
-////
-////			  
-////			  *firstCloud = *firstCloud +  *transformed ; 
-////
-////			  std::cout << tranfromationMAt2 << std::endl;
-////
-////			  visualize2(firstCloud);
-////
-////		}
-////
-////		saveLock.unlock();
-////		noFrames++;
-////
-////	char str[512];
-////	}
-////}
-////
-////	
-////
-////class SimpleOpenNIViewer
-////{
-////public:
-////	SimpleOpenNIViewer () : viewer ("PCL OpenNI Viewer") {  }
-////	
-////
-////	
-////
-////	void save()
-////	{
-////		/*char fileName[20];
-////		itoa(noFrames, fileName, 10);*/
-////
-////		/*pcl::io::savePCDFileASCII (, cloud);
-////		std::cerr << "Saved " << cloud.points.size () << " data points to test_pcd.pcd." << std::endl;*/
-////		//pcl::io::savePCDFileASCII (fileName, *cloud);
-////	}
-////
-////	void cloud_cb_ (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud)
-////	{
-////
-////		boost::mutex::scoped_lock saveLock(saveCloud);
-////		globalCloud = cloud;
-////		saveLock.unlock();
-////		
-////		if (!viewer.wasStopped())
-////		{
-////		 viewer.showCloud (cloud);
-////		}
-////
-////	}
-////
-////	void run ()
-////	{
-////		pcl::Grabber* interface = new pcl::OpenNIGrabber();
-////
-////		boost::function<void (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr&)> f =
-////			boost::bind (&SimpleOpenNIViewer::cloud_cb_, this, _1);
-////
-////		interface->registerCallback (f);
-////
-////		viewer.registerKeyboardCallback(&keyboardEventOccurred, (void*)&viewer);
-////
-////		//viewer.registerKeyboardCallback(&SimpleOpenNIViewer::keyboardEventOccurred);
-////		interface->start ();
-////
-////		while (!viewer.wasStopped())
-////		{
-////			sleep (1);
-////		}
-////
-////		interface->stop ();
-////	}
-////
-////
-////
-////	pcl::visualization::CloudViewer viewer;
-////};
-////
-////int main ()
-////{
-////	SimpleOpenNIViewer v;
-////	v.run ();
-////	return 0;
-////}
-////
-////
-////
-////
-////

@@ -70,6 +70,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FeatureTracker.cpp" />
     <ClCompile Include="HornMethod.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="openni_reader.cpp" />

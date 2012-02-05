@@ -28,6 +28,10 @@ void Transformation::setRotation(double s, double qx, double qy, double qz, bool
 		qy/=norm;
 		qz/=norm;
 	}
+	this->a = s;
+	this->b = qx;
+	this->c = qy;
+	this->d = qz;
 
 	this->rotation[0][0] = 1-2*(qy*qy+qz*qz);   
 	this->rotation[0][1] = 2*(qx*qy-s*qz);    
@@ -196,7 +200,18 @@ void Transformation::concatenate(Eigen::Matrix4f *concatenated)
 }
 
 void Transformation::get4X4Matrix(Eigen::Matrix4f *fullTransformation)
-{
+{/*
+	(*fullTransformation)(0,0) = a * a + b * b - c * c - d * d;
+	(*fullTransformation)(0,1) = 2 * b * c - 2 * a * d;
+	(*fullTransformation)(0,2) = 2 * b * d + 2 * a * c;
+
+	(*fullTransformation)(1,0) = 2 * b * c + 2 * a * d;
+	(*fullTransformation)(1,1) = a * a - b * b + c * c - d * d;
+	(*fullTransformation)(1,2) = 2 * c * d + 2 * a * b;
+
+	(*fullTransformation)(2,0) = 2 * b * d - 2 * a * c;
+	(*fullTransformation)(2,1) = 2 * c * d + 2 * a * b;
+	(*fullTransformation)(2,2) = a * a - b * b - c * c + d * d;*/
 	for(int i = 0; i < 3; i++)
 		for(int j = 0; j < 3; j++)
 			(*fullTransformation)(i,j) = this->rotation[i][j];
