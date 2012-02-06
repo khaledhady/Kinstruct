@@ -235,14 +235,36 @@ void transform(Transformation *transform, pcl::PointCloud<pcl::PointXYZRGB>::Ptr
    
 void visualize()  
 {  
+
+
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
 	viewer->setBackgroundColor (0, 0, 0);
-	boost::mutex::scoped_lock drawLock(updateModelMutex);
+
+	int v1(0);
+	viewer->createViewPort(0.0, 0.0, 0.5, 1.0, v1);
+	viewer->setBackgroundColor (0, 0, 0, v1);
+	viewer->addText("Result in RGB", 10, 10, "v1 text", v1);
+	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(result);
+	viewer->addPointCloud<pcl::PointXYZRGB> (result, rgb, "result", v1);
+
+	int v2(0);
+	viewer->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
+	viewer->setBackgroundColor (0.3, 0.3, 0.3, v2);
+	viewer->addText("Result Colored", 10, 10, "v2 text", v2);
+	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgbColored(resultColored);
+	viewer->addPointCloud<pcl::PointXYZRGB> (resultColored, rgbColored, "resultColored", v2);
+
+	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "result");
+	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "resultColored");
+	viewer->addCoordinateSystem (1.0);
+
+
+	/*boost::mutex::scoped_lock drawLock(updateModelMutex);
 	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(result);
 	viewer->addPointCloud<pcl::PointXYZRGB> (result, rgb, "sample cloud");
 	drawLock.unlock();
 	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud");
-	viewer->addCoordinateSystem (1.0);
+	viewer->addCoordinateSystem (1.0);*/
 	//viewer->resetCameraViewpoint("sample cloud");
 	int i = 0;
 	while (!viewer->wasStopped ())
@@ -258,13 +280,19 @@ void visualize()
 			cout << update << endl;
 			stringstream tmp;
 			tmp << i;
-			viewer->removePointCloud("sample cloud");
+			viewer->removePointCloud("result", v1);
+			
 			//viewer->addPointCloud<pcl::PointXYZRGB>(result, rgb, tmp.str());
 			//viewer->updatePointCloud(
-			viewer->addPointCloud<pcl::PointXYZRGB> (result, rgb, "sample cloud");
+			viewer->addPointCloud<pcl::PointXYZRGB> (result, rgb, "result", v1);
+			viewer->removePointCloud("resultColored", v2);
+			viewer->addPointCloud<pcl::PointXYZRGB> (resultColored, rgbColored, "resultColored", v2);
 			//viewer->updatePointCloud<pcl::PointXYZRGB>(result, rgb, "sample cloud");
 			if(i == 0)
-				viewer->resetCameraViewpoint("sample cloud");
+			{
+				viewer->resetCameraViewpoint("result");
+				//viewer->resetCameraViewpoint("resultColored");
+			}
 			update = false;
 			i++;
 		}
@@ -301,6 +329,26 @@ void makeBlue(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudToColor)
 	{
 		cloudToColor->points[i].r = 0;
 		cloudToColor->points[i].g = 0;
+		cloudToColor->points[i].b = 255;
+	}
+}
+
+void makeYellow(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudToColor)
+{
+	for(int i = 0; i < cloudToColor->size(); i++)
+	{
+		cloudToColor->points[i].r = 255;
+		cloudToColor->points[i].g = 255;
+		cloudToColor->points[i].b = 0;
+	}
+}
+
+void makeWhite(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudToColor)
+{
+	for(int i = 0; i < cloudToColor->size(); i++)
+	{
+		cloudToColor->points[i].r = 255;
+		cloudToColor->points[i].g = 255;
 		cloudToColor->points[i].b = 255;
 	}
 }
@@ -421,10 +469,23 @@ int main()
 		//detectNew(result, transformed);
 		*result += *transformed;
 		updateLock.unlock();
-		//makeRed(coloredA);
-		//makeGreen(coloredB);
-		//*resultColored += *coloredA;
-		//*resultColored += *coloredB;
+		if(times == 2)
+		{	
+			makeRed(coloredA);
+			makeGreen(transformed);
+			*resultColored += *coloredA;
+		}else if(times == 3)
+		{
+			makeBlue(transformed);
+		}else if(times == 4)
+		{
+			makeYellow(transformed);
+		}else if(times == 5)
+		{
+			makeWhite(transformed);
+		}
+		
+		*resultColored += *transformed;
 	}
     
 	 /*pcl::io::savePCDFileASCII ("test.pcd", *cloud);
