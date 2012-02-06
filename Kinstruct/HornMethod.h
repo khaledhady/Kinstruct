@@ -1,13 +1,16 @@
 #include <iostream>
 #include <stdlib.h>
 #include <windows.h>
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
-#include "Visualizer.h"
+#include <opencv/cv.h>
+#include <opencv/cxcore.h>
+#include <opencv/highgui.h>
+
 #include "Transformation.h"
 #include <math.h>
-using namespace cv;
+
+#ifndef HORN
+#define HORN
+
 using namespace std;
 
 class HornMethod
@@ -15,8 +18,10 @@ class HornMethod
 
 	public:
 		HornMethod();
-		void getTransformation(vector<Point3f*> setA, vector<Point3f*> setB, Transformation *Result );
+		void getTransformation(vector<cv::Point3f> *setA, vector<cv::Point3f> *setB, Transformation *Result );
 		void selfTest();
 
 	private:
 };
+
+#endif

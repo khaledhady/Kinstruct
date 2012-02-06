@@ -14,13 +14,13 @@ void print(CvMat *ok)
 	}
 }
 
-void HornMethod::getTransformation(vector<Point3f*> setA, vector<Point3f*> setB, Transformation *Result )
+void HornMethod::getTransformation(vector<cv::Point3f> *setA, vector<cv::Point3f> *setB, Transformation *Result )
 {
-	int i, pairNum = setA.size();
-	CvMat *muLmuR = cvCreateMat(3, 3, DataType<double>::type);
-	CvMat *M = cvCreateMat(3, 3, DataType<double>::type);
-	CvMat *curMat = cvCreateMat(3, 3, DataType<double>::type);
-	CvMat *N = cvCreateMat(4, 4, DataType<double>::type);
+	int i, pairNum = setA->size();
+	CvMat *muLmuR = cvCreateMat(3, 3, cv::DataType<double>::type);
+	CvMat *M = cvCreateMat(3, 3, cv::DataType<double>::type);
+	CvMat *curMat = cvCreateMat(3, 3, cv::DataType<double>::type);
+	CvMat *N = cvCreateMat(4, 4, cv::DataType<double>::type);
 
 	// INITALIZE MATRICES
 	for(int i = 0; i < 3; i++)
@@ -36,17 +36,18 @@ void HornMethod::getTransformation(vector<Point3f*> setA, vector<Point3f*> setB,
 			cvmSet(N, i, j, 0);
 		
 
-	Point3d meanA(0, 0, 0), meanB(0, 0, 0);
-
+	cv::Point3d meanA(0, 0, 0), meanB(0, 0, 0);
+	//cout << "ok" << endl;
 	for(int i = 0; i < pairNum; i++)
 	{
-		meanA.x += setA.at(i)->x;
-		meanA.y += setA.at(i)->y;
-		meanA.z += setA.at(i)->z;
-
-		meanB.x += setB.at(i)->x;
-		meanB.y += setB.at(i)->y;
-		meanB.z += setB.at(i)->z;
+		meanA.x += setA->at(i).x;
+		meanA.y += setA->at(i).y;
+		meanA.z += setA->at(i).z;
+		//cout << i << ", " << setA->at(i).z << endl;
+		meanB.x += setB->at(i).x;
+		meanB.y += setB->at(i).y;
+		meanB.z += setB->at(i).z;
+		//cout << i << ", " << setB->at(i).z << endl;
 	}
 	
 	meanA.x = meanA.x / pairNum;
@@ -68,19 +69,19 @@ void HornMethod::getTransformation(vector<Point3f*> setA, vector<Point3f*> setB,
 	cvmSet(muLmuR, 2,2, meanA.z * meanB.z);
 
 		
-	for (int i = 0; i < setA.size(); i++) {
-		Point3f *leftPoint = setA.at(i);
-		Point3f *rightPoint = setB.at(i);
+	for (int i = 0; i < setA->size(); i++) {
+		cv::Point3f leftPoint = setA->at(i);
+		cv::Point3f rightPoint = setB->at(i);
 	
-		cvmSet(curMat, 0,0, leftPoint->x * rightPoint->x);
-		cvmSet(curMat, 0,1, leftPoint->x * rightPoint->y);
-		cvmSet(curMat, 0,2, leftPoint->x * rightPoint->z);
-		cvmSet(curMat, 1,0, leftPoint->y * rightPoint->x);
-		cvmSet(curMat, 1,1, leftPoint->y * rightPoint->y);
-		cvmSet(curMat, 1,2, leftPoint->y * rightPoint->z);
-		cvmSet(curMat, 2,0, leftPoint->z * rightPoint->x);
-		cvmSet(curMat, 2,1, leftPoint->z * rightPoint->y);
-		cvmSet(curMat, 2,2, leftPoint->z * rightPoint->z);
+		cvmSet(curMat, 0,0, leftPoint.x * rightPoint.x);
+		cvmSet(curMat, 0,1, leftPoint.x * rightPoint.y);
+		cvmSet(curMat, 0,2, leftPoint.x * rightPoint.z);
+		cvmSet(curMat, 1,0, leftPoint.y * rightPoint.x);
+		cvmSet(curMat, 1,1, leftPoint.y * rightPoint.y);
+		cvmSet(curMat, 1,2, leftPoint.y * rightPoint.z);
+		cvmSet(curMat, 2,0, leftPoint.z * rightPoint.x);
+		cvmSet(curMat, 2,1, leftPoint.z * rightPoint.y);
+		cvmSet(curMat, 2,2, leftPoint.z * rightPoint.z);
 		cvmAdd(M, curMat, M);
 	}
 
@@ -95,7 +96,7 @@ void HornMethod::getTransformation(vector<Point3f*> setA, vector<Point3f*> setB,
 	
 
    	//compute the matrix N	
-	CvMat *tmp = cvCreateMat(3, 3, DataType<double>::type);
+	CvMat *tmp = cvCreateMat(3, 3, cv::DataType<double>::type);
 	for(int i = 0; i < 3; i++)
 	  for(int j = 0; j < 3; j++)
 		  cvmSet(tmp, i, j, 0);
@@ -108,7 +109,7 @@ void HornMethod::getTransformation(vector<Point3f*> setA, vector<Point3f*> setB,
     cvmSet(tmp, 1, 1, -1 * traceM);
     cvmSet(tmp, 2, 2, -1 * traceM);
 
-    CvMat *MTranspose = cvCreateMat(3, 3, DataType<double>::type);
+    CvMat *MTranspose = cvCreateMat(3, 3, cv::DataType<double>::type);
     cvTranspose(M, MTranspose);
  
     cvmAdd(tmp, MTranspose, tmp); 
@@ -134,8 +135,8 @@ void HornMethod::getTransformation(vector<Point3f*> setA, vector<Point3f*> setB,
 	  for(int j = 1; j < 4; j++)
 		cvmSet(N, i, j, cvmGet(tmp, i - 1, j - 1));
             
-  CvMat* eigenVec = cvCreateMat(4, 4, DataType<double>::type);
-  CvMat* eigenVal  =cvCreateMat(4, 1, DataType<double>::type);
+  CvMat* eigenVec = cvCreateMat(4, 4, cv::DataType<double>::type);
+  CvMat* eigenVal  =cvCreateMat(4, 1, cv::DataType<double>::type);
   cvEigenVV(N, eigenVec, eigenVal);
   Transformation transform(false);
   transform.setRotation( -1 * cvmGet(eigenVec, 0, 0), -1 * cvmGet(eigenVec, 0, 1), -1 * cvmGet(eigenVec, 0, 2), -1 * cvmGet(eigenVec, 0, 3), true );
