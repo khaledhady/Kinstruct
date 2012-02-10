@@ -25,12 +25,14 @@ boost::mutex updateModelMutex;
 
 void cloudToMat(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, cv::Mat *color, cv::Mat *depth)
 {
+	int k = 30;
+	int m = 30;
 	for(int i = 0; i < color->cols; i++)
 	{
 
 		for(int j = 0; j < color->rows; j++)
 		{
-			pcl::PointXYZRGB point = cloud->at(i,j);
+			pcl::PointXYZRGB point = cloud->at(i + 30, j + 30);
 			   if (!isFinite (point))
 			        continue;
 
@@ -38,9 +40,9 @@ void cloudToMat(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, cv::Mat *color, cv
 			color->at<cv::Vec3b>(j, i)[1] = point.g;
 			color->at<cv::Vec3b>(j, i)[2] = point.r;
 			depth->at<float>(j, i) = point.z;
+			
 
 		}
-
 	}
 	cv::imshow("here", *color);
 }
@@ -108,33 +110,33 @@ void alignFrames(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *dep
 
 	RobustMatcher rmatcher;
 
-	cv::Ptr<cv::FeatureDetector> pfd = new cv::SurfFeatureDetector(100);
+	//cv::Ptr<cv::FeatureDetector> pfd = new cv::SurfFeatureDetector(100);
 
-	rmatcher.setFeatureDetector(pfd);
+	//rmatcher.setFeatureDetector(pfd);
 	// Match the two images
 	vector<cv::DMatch> matches;
 	vector<cv::KeyPoint> keypointsA, keypointsB;
 	cout << "getting matches \n";
 	time_t before;
     before = time (NULL);
-    
-  
-	cv::Mat fundemental= rmatcher.match(grayA, grayB, matches, keypointsA, keypointsB);
+    rmatcher.track(grayA, grayB, matches, keypointsA, keypointsB);
+	
+	//cv::Mat fundemental= rmatcher.match(grayA, grayB, matches, keypointsA, keypointsB);
 	time_t after;
 
 	after = time (NULL);
 	cout << "Found matches " << after - before << endl;
 
 
-	cv::Mat img_matches;
+	/*cv::Mat img_matches;
 	drawMatches( grayA, keypointsA, grayB, keypointsB,
                matches, img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
-               vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+               vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );*/
 
   
     //-- Show detected matches
-    cv::imshow( "Good Matches1" , img_matches);
-	//cv::imshow( "Good Matches2" , *colorB );
+    cv::imshow( "Good Matches1" , grayA);
+	cv::imshow( "Good Matches2" , grayB );
 	//cv::waitKey(0);
 	//window++;
 
@@ -144,24 +146,28 @@ void alignFrames(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *dep
 
 	vector<cv::Point3f> setA, setB;
 
-	/*for(int i = 0; i < pointsA.size() ; i++)
+	for(int i = 0; i < rmatcher.initial.size() ; i++)
 	{
-		cv::Point2f point2DA = pointsA.at(i);
-		cv::Point2f point2DB = pointsB.at(i);
-
+		cv::Point2f point2DA = rmatcher.initial.at(i);
+		cv::Point2f point2DB = rmatcher.final.at(i);
+		/*cout << point2DA.x << point2DA.y << endl;
+		cout << point2DB.x << point2DB.y << endl;*/
+		if(point2DA.x < 0 || point2DA.y < 0 || point2DB.x < 0 || point2DB.y < 0)
+			continue;
 		pcl::PointXYZRGB pointA = cloudA->at(point2DA.x, point2DA.y);
 		pcl::PointXYZRGB pointB = cloudB->at(point2DB.x, point2DB.y);
+		
 		  if (!isFinite (pointA) || !isFinite (pointB))
 			    continue;
-		  cout << pointA.z << endl; 
+		  //cout << pointA.z << endl; 
 
 		cv::Point3f point3D (pointA.x, pointA.y, pointA.z); 
 		setA.push_back(point3D);
 		cv::Point3f point3DB (pointB.x, pointB.y, pointB.z); 
 		setB.push_back(point3DB);
-	}*/
+	}
 
-	for(int i = 0; i < matches.size(); i++)
+	/*for(int i = 0; i < matches.size(); i++)
 	{
 		cv::Point2f point2DA = selPoints1.at(matches.at(i).queryIdx);
 		cv::Point2f point2DB = selPoints2.at(matches.at(i).trainIdx);
@@ -176,7 +182,7 @@ void alignFrames(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *dep
 		setA.push_back(point3D);
 		cv::Point3f point3DB (pointB.x, pointB.y, pointB.z); 
 		setB.push_back(point3DB);
-	}
+	}*/
 
 	cout << "getting transformation \n";
 	before = time (NULL);
@@ -280,13 +286,14 @@ void visualize()
 			cout << update << endl;
 			stringstream tmp;
 			tmp << i;
-			viewer->removePointCloud("result", v1);
+			//viewer->removePointCloud("result", v1);
 			
 			//viewer->addPointCloud<pcl::PointXYZRGB>(result, rgb, tmp.str());
 			//viewer->updatePointCloud(
-			viewer->addPointCloud<pcl::PointXYZRGB> (result, rgb, "result", v1);
-			viewer->removePointCloud("resultColored", v2);
-			viewer->addPointCloud<pcl::PointXYZRGB> (resultColored, rgbColored, "resultColored", v2);
+			viewer->addPointCloud<pcl::PointXYZRGB> (result, rgb, tmp.str(), v1);
+			//viewer->removePointCloud("resultColored", v2);
+			tmp << "color";
+			viewer->addPointCloud<pcl::PointXYZRGB> (resultColored, rgbColored, tmp.str(), v2);
 			//viewer->updatePointCloud<pcl::PointXYZRGB>(result, rgb, "sample cloud");
 			if(i == 0)
 			{
@@ -371,56 +378,53 @@ int main()
 
 	int frameNo = START_FRAME;
 	int times = 1;
-	int final = 3;
+	int final = 29;
+
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredA (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledA (new pcl::PointCloud<pcl::PointXYZRGB>);
+	std::stringstream streamA;
+	streamA << "" << times << ".pcd";
+	if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (streamA.str(), *cloudA) == -1) //* load the file
+	{
+		PCL_ERROR ("Couldn't read file test_pcd.pcd \n");
+		return (-1);
+	}
+	boost::mutex::scoped_lock initializeLock(updateModelMutex);
+	update = true;
+	*result += *cloudA;
+	downsample(cloudA, lastAligned);
+	initializeLock.unlock();
+	cv::Mat imgA(cloudA->height - 50, cloudA->width - 50, CV_8UC3 );
+	cv::Mat depthA(cloudA->height - 50, cloudA->width - 50, CV_32F );
+	pcl::PassThrough<pcl::PointXYZRGB> pass; 
+	pass.setInputCloud( cloudA );
+	pass.filter( *coloredA );
+	cloudToMat(cloudA, &imgA, &depthA);
 	boost::thread workerThread(visualize);
 	while(times < final)
 	{
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA (new pcl::PointCloud<pcl::PointXYZRGB>);
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB (new pcl::PointCloud<pcl::PointXYZRGB>);
-
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredA (new pcl::PointCloud<pcl::PointXYZRGB>);
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredB (new pcl::PointCloud<pcl::PointXYZRGB>);
-
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledA (new pcl::PointCloud<pcl::PointXYZRGB>);
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledB (new pcl::PointCloud<pcl::PointXYZRGB>);
-
-		std::stringstream streamA;
-		streamA << "desk" << times << ".pcd";
-		if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (streamA.str(), *cloudA) == -1) //* load the file
-		{
-			PCL_ERROR ("Couldn't read file test_pcd.pcd \n");
-			return (-1);
-		}
 		times++;
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB (new pcl::PointCloud<pcl::PointXYZRGB>);
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredB (new pcl::PointCloud<pcl::PointXYZRGB>);
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledB (new pcl::PointCloud<pcl::PointXYZRGB>);
+		
 		std::stringstream streamB;
-		streamB << "desk" << times << ".pcd";
+		streamB << "" << times << ".pcd";
 		if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (streamB.str(), *cloudB) == -1) //* load the file
 		{
 			PCL_ERROR ("Couldn't read file test_pcd.pcd \n");
 			return (-1);
 		}
 
-		if(times == 2)
-		{
-			boost::mutex::scoped_lock initializeLock(updateModelMutex);
-			update = true;
-			*result += *cloudA;
-			downsample(cloudA, lastAligned);
-			initializeLock.unlock();
-		}
+		cv::Mat imgB(cloudB->height - 50, cloudB->width - 50, CV_8UC3 );
+		cv::Mat depthB(cloudB->height - 50, cloudB->width - 50, CV_32F );
 
-		cv::Mat imgA(cloudA->height, cloudA->width, CV_8UC3 );
-		cv::Mat imgB(cloudB->height, cloudB->width, CV_8UC3 );
-		cv::Mat depthA(cloudA->height, cloudA->width, CV_32F );
-		cv::Mat depthB(cloudB->height, cloudB->width, CV_32F );
-
-		pcl::PassThrough<pcl::PointXYZRGB> pass; 
-		pass.setInputCloud( cloudA );
-		pass.filter( *coloredA );
 		pass.setInputCloud( cloudB );
 		pass.filter( *coloredB );
 
-		cloudToMat(cloudA, &imgA, &depthA);
 		//cv::waitKey(0);
 		cloudToMat(cloudB, &imgB, &depthB);
 		//cv::waitKey(0);
@@ -462,13 +466,15 @@ int main()
 		//global->concatenate(&icp.getFinalTransformation());
 		//Eigen::Matrix4f finalTransformation;
 		//global->get4X4Matrix(&finalTransformation);
-		pcl::transformPointCloud(*coloredB, *transformed, icp.getFinalTransformation());
-
 		boost::mutex::scoped_lock updateLock(updateModelMutex);
 		update = true;
+		result->clear();
+		pcl::transformPointCloud(*coloredB, *result, icp.getFinalTransformation());
+		resultColored->clear();
+		pcl::copyPointCloud(*result, *transformed);
 		//detectNew(result, transformed);
-		*result += *transformed;
-		updateLock.unlock();
+		//*result += *transformed;
+		
 		if(times == 2)
 		{	
 			makeRed(coloredA);
@@ -486,6 +492,11 @@ int main()
 		}
 		
 		*resultColored += *transformed;
+		updateLock.unlock();
+		cloudA = cloudB;
+		coloredA = coloredB;
+		imgB.copyTo(imgA);
+		depthB.copyTo(depthA);
 	}
     
 	 /*pcl::io::savePCDFileASCII ("test.pcd", *cloud);

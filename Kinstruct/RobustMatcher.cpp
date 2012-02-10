@@ -1,8 +1,8 @@
 #include "RobustMatcher.h"
 
-	RobustMatcher::RobustMatcher() : ratio(0.65f), refineF(true), confidence(0.1), distance(1) {
+	RobustMatcher::RobustMatcher() : ratio(0.80f), refineF(true), confidence(0.1), distance(1) {
 		// SURF is the default feature
-		detector= new cv::SurfFeatureDetector();
+		detector= new cv::SurfFeatureDetector(400);
 		extractor= new cv::SurfDescriptorExtractor();
 	}
 
@@ -20,6 +20,83 @@
 		cv::Ptr<cv::DescriptorExtractor>& desc) {
 		extractor= desc;
 	}
+
+	void RobustMatcher::track(cv::Mat& image1,	cv::Mat& image2, 
+				std::vector<cv::DMatch>& matches,
+				std::vector<cv::KeyPoint>& keypoints1,
+				std::vector<cv::KeyPoint>& keypoints2) {
+		// 1a. Detection of the SURF features
+
+		//detector->detect(image1,keypoints1);
+			cout << "keypoints " << keypoints1.size() <<endl;
+		std::vector<cv::Point2f> selPoints2;
+	    //cv::KeyPoint::convert(keypoints1, initial);
+		std::vector<uchar> status;
+		std::vector<float> err;
+		std::vector<cv::Point2f> features;
+cv::goodFeaturesToTrack(image1, // the image
+initial, // the output detected features
+500, // the maximum number of features
+0.001, // quality level
+15, cv::Mat(), 3, 0, 0.04); // min distance between two features
+
+		//cvGoodFeaturesToTrack(
+		/*cvGoodFeaturesToTrack(imgA, eig_image, tmp_image, cornersA,
+          &corner_count, 0.01, 5.0, 0, 3, 0, 0.04 );*/
+
+
+
+		cv::calcOpticalFlowPyrLK(
+			image1, image2, // 2 consecutive images
+			initial, // input point positions in first image
+			selPoints2, // output point positions in the 2nd image
+			status, // tracking success
+			err, cv::Size(5,5), 5, cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, .3 ));
+		/*cvCalcOpticalFlowPyrLK(imgA, imgB, pyrA, pyrB, 
+        cornersA, cornersB, corner_count,
+         cvSize( win_size, win_size ), 5, features_found, feature_errors,
+         cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, .3 ), 0
+  );
+		cv::calcOpticalFlowPyrLK(
+		cvCalcOpticalFlowPyrLK(*/
+
+		int k=0;
+		int avgx = 70;
+		int avgy = 70;
+		/*for( int i= 0; i < initial.size(); i++ ) {
+			avgx += abs(initial[i].x-selPoints2[i].x);
+			avgy += abs(initial[i].y-selPoints2[i].y);
+		}
+		avgx /= initial.size();
+		avgy /= initial.size();*/
+		for( int i= 0; i < initial.size(); i++ ) {
+				// do we keep this point?
+				if (status[i] && ( abs(initial[i].x-selPoints2[i].x) < avgx ) && ( (abs(initial[i].y-selPoints2[i].y)) < avgy  )  ) {
+					// keep this point in vector
+					initial[k]= initial[i];
+					final.push_back(selPoints2[i]);
+					k++;
+					
+				}
+			}
+
+		final.resize(k);
+			initial.resize(k);
+			cout << "correct tracking: " << k << endl;
+
+		for(int i= 0; i < final.size(); i++ ) {
+		// draw line and circle
+			cv::line(image2,
+			initial[i], // initial position
+			final[i],// new position
+			cv::Scalar(255,0,0));
+			cv::circle(image2, final[i], 3,
+			cv::Scalar(0,255,0),-1);
+		}
+
+
+	}
+
 	//The main method is our match method that returns matches, detected keypoints, and the
 	//estimated fundamental matrix. The method proceeds in five distinct steps (explicitly identified
 	//in the comments of the following code) that we will now explore:
@@ -32,6 +109,7 @@
 		// 1a. Detection of the SURF features
 		detector->detect(image1,keypoints1);
 		detector->detect(image2,keypoints2);
+		cout << "keypoints " << keypoints1.size();
 		// 1b. Extraction of the SURF descriptors
 		cv::Mat descriptors1, descriptors2;
 		extractor->compute(image1,keypoints1,descriptors1);
@@ -44,22 +122,26 @@
 		std::vector<std::vector<cv::DMatch>> matches1;
 		matcher.knnMatch(descriptors1,descriptors2,
 		matches1, // vector of matches (up to 2 per entry)
-		2); // return 2 nearest neighbours
+		1); // return 2 nearest neighbours
+		
 		// from image 2 to image 1
 		// based on k nearest neighbours (with k=2)
-		std::vector<std::vector<cv::DMatch>> matches2;
-		matcher.knnMatch(descriptors2,descriptors1,
-		matches2, // vector of matches (up to 2 per entry)
-		2); // return 2 nearest neighbours
+		//std::vector<std::vector<cv::DMatch>> matches2;
+		//matcher.knnMatch(descriptors2,descriptors1,
+		//matches2, // vector of matches (up to 2 per entry)
+		//2); // return 2 nearest neighbours
 		// 3. Remove matches for which NN ratio is
 		// > than threshold
 		// clean image 1 -> image 2 matches
 		//int removed = ratioTest(matches1);
+		
 		//// clean image 2 -> image 1 matches
 		//removed= ratioTest(matches2);
 		// 4. Remove non-symmetrical matches
 		std::vector<cv::DMatch> symMatches;
-		symmetryTest(matches1,matches2,symMatches);
+		for(int i = 0; i < matches1.size(); i++)
+			symMatches.push_back(matches1[i][0]);
+		//symmetryTest(matches1,matches2,symMatches);
 		// 5. Validate matches using RANSAC
 		cv::Mat fundemental = ransacTest(symMatches,
 		keypoints1, keypoints2, matches);

@@ -14,6 +14,8 @@ using namespace std;
 #include <math.h>
 
 class RobustMatcher {
+
+
 	private:
 
 		// pointer to the feature point detector object
@@ -28,6 +30,8 @@ class RobustMatcher {
 	public:
 
 		RobustMatcher();
+		std::vector<cv::Point2f> initial;
+		std::vector<cv::Point2f> final;
 
 		/*Estimating Projective Relations in Images
 		Note how we used the generic cv::FeatureDetector and cv::DescriptorExtractor
@@ -101,6 +105,11 @@ class RobustMatcher {
 						   const std::vector<cv::KeyPoint>& keypoints1,
 						   const std::vector<cv::KeyPoint>& keypoints2,
 						   std::vector<cv::DMatch>& outMatches);
+
+		void RobustMatcher::track(cv::Mat& image1,	cv::Mat& image2, 
+				std::vector<cv::DMatch>& matches,
+				std::vector<cv::KeyPoint>& keypoints1,
+				std::vector<cv::KeyPoint>& keypoints2);
 };
 
 #endif

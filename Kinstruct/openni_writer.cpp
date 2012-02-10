@@ -444,7 +444,7 @@
 //		tmp << noFrames << ".pcd";
 //		
 //		//pcl::io::savePCDFileASCII(fileName, *globalcloud);
-//		pcl::io::savePCDFileBinary(tmp.str() , *cloud);
+//		pcl::io::savePCDFileBinary(tmp.str() , *deep_copy);
 //		/*if(noFrames == 5)
 //			pcl::io::savePLYFile("room.ply", *result);*/
 //		saveLock.unlock();
