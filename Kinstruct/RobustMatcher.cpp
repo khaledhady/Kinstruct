@@ -25,20 +25,15 @@
 				std::vector<cv::DMatch>& matches,
 				std::vector<cv::KeyPoint>& keypoints1,
 				std::vector<cv::KeyPoint>& keypoints2) {
-		// 1a. Detection of the SURF features
-
-		//detector->detect(image1,keypoints1);
-			cout << "keypoints " << keypoints1.size() <<endl;
 		std::vector<cv::Point2f> selPoints2;
-	    //cv::KeyPoint::convert(keypoints1, initial);
 		std::vector<uchar> status;
 		std::vector<float> err;
 		std::vector<cv::Point2f> features;
-cv::goodFeaturesToTrack(image1, // the image
-initial, // the output detected features
-500, // the maximum number of features
-0.001, // quality level
-15, cv::Mat(), 3, 0, 0.04); // min distance between two features
+		cv::goodFeaturesToTrack(image1, // the image
+		initial, // the output detected features
+		500, // the maximum number of features
+		0.001, // quality level
+		5, cv::Mat(), 3, 0, 0.04); // min distance between two features
 
 		//cvGoodFeaturesToTrack(
 		/*cvGoodFeaturesToTrack(imgA, eig_image, tmp_image, cornersA,
@@ -56,33 +51,50 @@ initial, // the output detected features
         cornersA, cornersB, corner_count,
          cvSize( win_size, win_size ), 5, features_found, feature_errors,
          cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, .3 ), 0
-  );
-		cv::calcOpticalFlowPyrLK(
-		cvCalcOpticalFlowPyrLK(*/
+		);*/
 
 		int k=0;
 		int avgx = 70;
 		int avgy = 70;
-		/*for( int i= 0; i < initial.size(); i++ ) {
+		for( int i= 0; i < initial.size(); i++ ) {
 			avgx += abs(initial[i].x-selPoints2[i].x);
 			avgy += abs(initial[i].y-selPoints2[i].y);
 		}
 		avgx /= initial.size();
-		avgy /= initial.size();*/
-		for( int i= 0; i < initial.size(); i++ ) {
-				// do we keep this point?
-				if (status[i] && ( abs(initial[i].x-selPoints2[i].x) < avgx ) && ( (abs(initial[i].y-selPoints2[i].y)) < avgy  )  ) {
-					// keep this point in vector
-					initial[k]= initial[i];
+		avgy /= initial.size();
+		std::vector<uchar> inliers(initial.size(), 0);
+		cv::Mat fundemental= cv::findFundamentalMat(
+		cv::Mat(initial),cv::Mat(selPoints2), // matching points
+		inliers, // match status (inlier or outlier)
+		CV_FM_RANSAC, // RANSAC method
+		distance, // distance to epipolar line
+		confidence); // confidence probability
+		// extract the surviving (inliers) matches
+		std::vector<uchar>::const_iterator	itIn= inliers.begin();
+		// for all matches
+		int i = 0;
+		for ( ;itIn!= inliers.end(); ++itIn, ++i) {
+			if (*itIn && status[i]) { // it is a valid match
+
+				initial[k]= initial[i];
 					final.push_back(selPoints2[i]);
 					k++;
-					
-				}
 			}
+		}
+		//for( int i= 0; i < initial.size(); i++ ) {
+		//		// do we keep this point?
+		//		if (status[i] && ( abs(initial[i].x-selPoints2[i].x) < avgx ) && ( (abs(initial[i].y-selPoints2[i].y)) < avgy  )  ) {
+		//			// keep this point in vector
+		//			initial[k]= initial[i];
+		//			final.push_back(selPoints2[i]);
+		//			k++;
+		//			
+		//		}
+		//	}
 
 		final.resize(k);
-			initial.resize(k);
-			cout << "correct tracking: " << k << endl;
+		initial.resize(k);
+		cout << "correct tracking: " << k << endl;
 
 		for(int i= 0; i < final.size(); i++ ) {
 		// draw line and circle

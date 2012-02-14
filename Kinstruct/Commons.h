@@ -4,6 +4,8 @@
 #include <windows.h>
 #include <opencv/cv.h>
 #include <opencv/cxcore.h>
+#include <pcl/surface/surfel_smoothing.h>
+#include <pcl/features/normal_3d.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/registration/icp.h>
 #include <pcl/filters/statistical_outlier_removal.h>
