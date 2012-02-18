@@ -22,10 +22,6 @@ boost::mutex saveCloud;
 #include <boost/thread.hpp>  
 #include <boost/date_time.hpp>  
 #include "pcl/win32_macros.h"
-#define START_FRAME 200
-#define STEP 10
-#define LAST_FRAME 300
-//using namespace cv;
 using namespace std;
 using namespace pcl;
 int noFrames = 0;
@@ -62,7 +58,7 @@ void cloudToMat(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, cv::Mat *color, cv
 			color->at<cv::Vec3b>(j, i)[1] = point.g;
 			color->at<cv::Vec3b>(j, i)[2] = point.r;
 			depth->at<float>(j, i) = point.z;
-			
+
 
 		}
 	}
@@ -81,7 +77,7 @@ bool alignFrames(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *dep
 	colorA->copyTo(imageA);
 	colorB->copyTo(imageB);
     int tracked = rmatcher.track(imageA, imageB);
-	
+
 	time_t after;
 
 	after = time (NULL);
@@ -111,7 +107,7 @@ bool alignFrames(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *dep
 			continue;
 		pcl::PointXYZRGB pointA = cloudA->at(point2DA.x, point2DA.y);
 		pcl::PointXYZRGB pointB = cloudB->at(point2DB.x, point2DB.y);
-		
+
 		  if (!isFinite (pointA) || !isFinite (pointB))
 			    continue;
 		  //cout << pointA.z << endl; 
@@ -135,56 +131,6 @@ bool alignFrames(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *dep
 
 }
 
-void makeRed(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudToColor)
-{
-	for(int i = 0; i < cloudToColor->size(); i++)
-	{
-		cloudToColor->points[i].r = 255;
-		cloudToColor->points[i].g = 0;
-		cloudToColor->points[i].b = 0;
-	}
-}
-
-void makeGreen(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudToColor)
-{
-	for(int i = 0; i < cloudToColor->size(); i++)
-	{
-		cloudToColor->points[i].r = 0;
-		cloudToColor->points[i].g = 255;
-		cloudToColor->points[i].b = 0;
-	}
-}
-
-void makeBlue(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudToColor)
-{
-	for(int i = 0; i < cloudToColor->size(); i++)
-	{
-		cloudToColor->points[i].r = 0;
-		cloudToColor->points[i].g = 0;
-		cloudToColor->points[i].b = 255;
-	}
-}
-
-void makeYellow(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudToColor)
-{
-	for(int i = 0; i < cloudToColor->size(); i++)
-	{
-		cloudToColor->points[i].r = 255;
-		cloudToColor->points[i].g = 255;
-		cloudToColor->points[i].b = 0;
-	}
-}
-
-void makeWhite(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudToColor)
-{
-	for(int i = 0; i < cloudToColor->size(); i++)
-	{
-		cloudToColor->points[i].r = 255;
-		cloudToColor->points[i].g = 255;
-		cloudToColor->points[i].b = 255;
-	}
-}
-
 void downsample(pcl::PointCloud<pcl::PointXYZRGB>::Ptr original, pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled)
 {
   // Create the filtering object
@@ -192,7 +138,7 @@ void downsample(pcl::PointCloud<pcl::PointXYZRGB>::Ptr original, pcl::PointCloud
        << " data points (" << pcl::getFieldsList (*original) << ").";
   pcl::VoxelGrid<pcl::PointXYZRGB> sor;
   sor.setInputCloud (original);
-  sor.setLeafSize (0.1f, 0.1f, 0.1f);
+  sor.setLeafSize (0.01f, 0.01f, 0.01f);
   sor.filter (*downsampled);
   std::cerr << "PointCloud after filtering: " << downsampled->width * downsampled->height 
        << " data points (" << pcl::getFieldsList (*downsampled) << ").";
@@ -202,13 +148,16 @@ void main1()
 {
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredA (new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledA (new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredB (new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledB (new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformedDownsampled (new pcl::PointCloud<pcl::PointXYZRGB>);
 	boost::mutex::scoped_lock initializeLock(updateModelMutex);
 	updateBuilt = true;
 	*result += *cloudA;
 	downsample(cloudA, lastAligned);
 	initializeLock.unlock();
-	cv::Mat imgA(cloudA->height - 50, cloudA->width - 50, CV_8UC3 );
-	cv::Mat depthA(cloudA->height - 50, cloudA->width - 50, CV_32F );
+	cv::Mat imgA(cloudA->height - 30, cloudA->width - 30, CV_8UC3 );
+	cv::Mat depthA(cloudA->height - 30, cloudA->width - 30, CV_32F );
 	pcl::PassThrough<pcl::PointXYZRGB> pass; 
 	pass.setInputCloud( cloudA );
 	pass.filter( *coloredA );
@@ -220,31 +169,32 @@ void main1()
 		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
 		if(capturedNew)
 		{
+			// Clear old point clouds
+			coloredB->clear();
+			downsampledB->clear();
+			transformedDownsampled->clear();
 			cout << "started" << endl;
 			times++;
-			//pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB (new pcl::PointCloud<pcl::PointXYZRGB>);
-			pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredB (new pcl::PointCloud<pcl::PointXYZRGB>);
-			pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledB (new pcl::PointCloud<pcl::PointXYZRGB>);
 
-			cv::Mat imgB(cloudB->height - 50, cloudB->width - 50, CV_8UC3 );
-			cv::Mat depthB(cloudB->height - 50, cloudB->width - 50, CV_32F );
-
+			cv::Mat imgB(cloudB->height - 30, cloudB->width - 30, CV_8UC3 );
+			cv::Mat depthB(cloudB->height - 30, cloudB->width - 30, CV_32F );
+			
+			// Remove the NaN values from the point cloud
 			pass.setInputCloud( cloudB );
 			pass.filter( *coloredB );
 
 			cloudToMat(cloudB, &imgB, &depthB);
-			//cv::waitKey(0);
 			Transformation inverse(false);
-			bool tooClose = alignFrames(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB);
-			if(!tooClose)
+
+			// use the two obtained frames to get the initial tansformations
+			bool ignore  = alignFrames(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB);
+
+			// ignore is true if the two point clouds are same, so just continue and discard cloudB
+			// ignore can also be true if the two points clouds are far so tracking has failed, in that
+			// case discard the frame and wait till the user gets back to a frame that can be tracked
+			if(!ignore )
 			{
 				
-				
-				//cv::waitKey(0);
-				pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformedDownsampled (new pcl::PointCloud<pcl::PointXYZRGB>);
-				pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
-				//if(times == 2)
-					//global->concatenate(&inverse);
 				cout << "getting ICP \n";
 				time_t before;
 				before = time (NULL);
@@ -253,14 +203,12 @@ void main1()
 					inverse.concatenate(&lastTransformation);
 				first = false;
 				inverse.get4X4Matrix(&initialTransformation);
+
+				// Perform ICP on the downsampled point clouds
 				pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-				//boost::mutex::scoped_lock downsamplingLock(updateModelMutex);
-				//downsample(result, downsampledA);
-				//downsamplingLock.unlock();
 				downsample(coloredB, downsampledB);
 				icp.setInputCloud(downsampledB);
 				icp.setInputTarget(lastAligned);
-  
 				icp.setMaxCorrespondenceDistance(0.1);
 				//icp.setRANSACOutlierRejectionThreshold(0.05);
 				//icp.setTransformationEpsilon(0.000001);
@@ -270,40 +218,14 @@ void main1()
 				lastAligned->clear();
 				pcl::copyPointCloud(*transformedDownsampled, *lastAligned);
 				std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
-				//std::cout << icp.getFinalTransformation() << std::endl;
 				time_t after = time (NULL);
 				cout << "Found Transformation " << after - before << endl;
 				lastTransformation = icp.getFinalTransformation();
-				//global->concatenate(&icp.getFinalTransformation());
-				//Eigen::Matrix4f finalTransformation;
-				//global->get4X4Matrix(&finalTransformation);
 				boost::mutex::scoped_lock updateLock(updateModelMutex);
 				updateBuilt = true;
 				result->clear();
 				pcl::transformPointCloud(*coloredB, *result, icp.getFinalTransformation());
-				*global += *result;
-				resultColored->clear();
-				pcl::copyPointCloud(*result, *transformed);
-				//detectNew(result, transformed);
-				//*result += *transformed;
-			/*
-				if(times == 2)
-				{	
-					makeRed(coloredA);
-					makeGreen(transformed);
-					*resultColored += *coloredA;
-				}else if(times == 3)
-				{
-					makeBlue(transformed);
-				}else if(times == 4)
-				{
-					makeYellow(transformed);
-				}else if(times == 5)
-				{
-					makeWhite(transformed);
-				}
-		
-				*resultColored += *transformed;*/
+				//*global += *result;
 				updateLock.unlock();
 				cloudA = cloudB;
 				coloredA = coloredB;
@@ -319,7 +241,7 @@ void main1()
 
 void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void)
 {
-	  
+
 	if (event.getKeySym () == "r" && event.keyDown ())
 	{
 		boost::mutex::scoped_lock saveLock(updateOnlineMutex);
@@ -333,34 +255,12 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 			cout << "Started recording --> " << endl;
 			start = true;
 		}
-		else if(noFrames == 1){
-			cout << "Obtained second Frame" <<endl ;
-			cloudB = deep_copy;
-			capturedNew = true;
-			//boost::thread workerThread(main1);
-			//workerThread.join();
-			//main1();
-		}else{
+		else{
 			cout << "Obtained "<< noFrames + 1 << "  Frame" << endl ;
-			cloudA = cloudB;
 			cloudB = deep_copy;
 			capturedNew = true;
-			//main1();
-			//boost::thread workerThread(main1);
-			//workerThread.join();
 		}
 		noFrames++;
-		/*char fileName[20];
-		itoa(noFrames, fileName, 10);*/
-
-		std::string fileName = ".pcd";
-		std::stringstream tmp;
-		tmp << noFrames << ".pcd";
-		
-		//pcl::io::savePCDFileASCII(fileName, *globalcloud);
-		//pcl::io::savePCDFileBinary(tmp.str() , *deep_copy);
-		/*if(noFrames == 5)
-			pcl::io::savePLYFile("room.ply", *result);*/
 		saveLock.unlock();
 
 	}else if (event.getKeySym () == "p" && event.keyDown ())
@@ -384,7 +284,7 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 	}
 }
 
-	
+
 
 class SimpleOpenNIViewer
 {
@@ -394,7 +294,7 @@ public:
 	{
 		seconds = 0;
 	}
-	
+
 
 
 	void cloud_cb_ (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud)
@@ -403,40 +303,34 @@ public:
 		boost::mutex::scoped_lock updateOnlineLock(updateOnlineMutex);
 		onlineView->clear();
 		pcl::copyPointCloud(*cloud, *onlineView);
-		//cout << "online is filled" << endl;
 		updateOnline = true;
-		
 
-		PointCloud<pcl::PointXYZRGB>::Ptr deep_copy (new PointCloud<pcl::PointXYZRGB>( *onlineView ) );
+
+		
 		updateOnlineLock.unlock();
 		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
+		
 		if(seconds % 10 == 0 && start && !stop)
 		{
-			
-			/*if(noFrames == 1){
-				cout << "Obtained second Frame" <<endl ;
-			cloudB = deep_copy;
-			capturedNew = true;
-			}else{*/
+			PointCloud<pcl::PointXYZRGB>::Ptr deep_copy (new PointCloud<pcl::PointXYZRGB>( *onlineView ) );
+		
 			cout << "Obtained "<< noFrames + 1 << "  Frame" << endl ;
-			/*cloudA = cloudB;*/
 			cloudB = deep_copy;
 			capturedNew = true;
-		/*	}*/
 			noFrames++;
 		}
 		updateCloudBLock.unlock();
-	
-		
-		
-		
+
+
+
+
 
 	}
 
 	void run ()
 	{
-		//pcl::Grabber* x = new pcl::OpenNIGrabber("", pcl::OpenNIGrabber::OpenNI_QVGA_30Hz, pcl::OpenNIGrabber::OpenNI_QVGA_30Hz);
-		pcl::Grabber* x = new pcl::OpenNIGrabber();
+		pcl::Grabber* x = new pcl::OpenNIGrabber("", pcl::OpenNIGrabber::OpenNI_QVGA_30Hz, pcl::OpenNIGrabber::OpenNI_QVGA_30Hz);
+		//pcl::Grabber* x = new pcl::OpenNIGrabber();
 
 		boost::function<void (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr&)> f =
 		boost::bind (&SimpleOpenNIViewer::cloud_cb_, this, _1);
@@ -492,14 +386,14 @@ void visualize()
 
 		boost::mutex::scoped_lock updateBuiltLock(updateModelMutex);
 		/*if(updateLock.try_lock())*/
-		
+
 		if(updateBuilt)
 		{
 			stringstream tmp;
 			tmp << i;
 			//tmp << "color";
 			viewer->addPointCloud<pcl::PointXYZRGB> (result, rgbColored, tmp.str(), v2);
-			*global += *result;
+			//*global += *result;
 			if(i == 0)
 			{
 				//viewer->resetCameraViewpoint(tmp.str());
@@ -518,7 +412,7 @@ void visualize()
 			updateOnline = false;
 		}
 		updateOnlineLock.unlock();
-		
+
 		//boost::this_thread::sleep (boost::posix_time::microseconds (100000));
 	}   
     std::cout << "Worker: finished" << std::endl;  
