@@ -1,24 +1,28 @@
 #include "RobustMatcher.h"
 
-	RobustMatcher::RobustMatcher() : ratio(0.80f), refineF(true), confidence(0.1), distance(1) {
+	RobustMatcher::RobustMatcher() :  confidence(0.1), distance(1) {
 	}
 
 
 	int RobustMatcher::track(cv::Mat& image1,	cv::Mat& image2) {
+		cv::Mat grayA, grayB;
+		cv::cvtColor(image1, grayA, CV_RGB2GRAY);
+		cv::cvtColor(image2, grayB, CV_RGB2GRAY);
 		std::vector<cv::Point2f> selPoints2;
 		std::vector<uchar> status;
 		std::vector<float> err;
 		std::vector<cv::Point2f> features;
-		cv::goodFeaturesToTrack(image1, // the image
+		int max_corners = 500;
+		cv::goodFeaturesToTrack(grayA, // the image
 		initial, // the output detected features
-		500, // the maximum number of features
+		max_corners, // the maximum number of features
 		0.001, // quality level
 		5, cv::Mat(), 3, 0, 0.04); // min distance between two features
 
 
 
 		cv::calcOpticalFlowPyrLK(
-			image1, image2, // 2 consecutive images
+			grayA, grayB, // 2 consecutive images
 			initial, // input point positions in first image
 			selPoints2, // output point positions in the 2nd image
 			status, // tracking success
@@ -59,6 +63,8 @@
 			final[i],// new position
 			cv::Scalar(255,0,0));
 			cv::circle(image2, final[i], 3,
+			cv::Scalar(0,255,0),-1);
+			cv::circle(image1, initial[i], 3,
 			cv::Scalar(0,255,0),-1);
 		}
 		return k;

@@ -22,8 +22,6 @@ class RobustMatcher {
 		cv::Ptr<cv::FeatureDetector> detector;
 		// pointer to the feature descriptor extractor object
 		cv::Ptr<cv::DescriptorExtractor> extractor;
-		float ratio; // max ratio between 1st and 2nd NN
-		bool refineF; // if true will refine the F matrix
 		double distance; // min distance to epipolar
 		double confidence; // confidence level (probability)
 
@@ -32,6 +30,9 @@ class RobustMatcher {
 		RobustMatcher();
 		std::vector<cv::Point2f> initial;
 		std::vector<cv::Point2f> final;
+
+		std::vector<cv::Point2f> successTrackedA;
+		std::vector<cv::Point2f> successTrackedB;
 		int track(cv::Mat& image1,	cv::Mat& image2);
 };
 
