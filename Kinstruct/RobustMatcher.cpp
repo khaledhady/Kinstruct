@@ -18,7 +18,7 @@
 		initial, // the output detected features
 		max_corners, // the maximum number of features
 		0.01, // quality level
-		5, cv::Mat(), 3, 0, 0.04); // min distance between two features
+		10, cv::Mat(), 3, 0, 0.04); // min distance between two features
 
 
 

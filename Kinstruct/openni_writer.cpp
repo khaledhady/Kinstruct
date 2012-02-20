@@ -50,7 +50,7 @@ void cloudToMat(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, cv::Mat *color, cv
 
 		for(int j = 0; j < color->rows; j++)
 		{
-			pcl::PointXYZRGB point = cloud->at(i + 30, j + 30);
+			pcl::PointXYZRGB point = cloud->at(i + 50, j + 50);
 			   if (!isFinite (point))
 			        continue;
 
@@ -63,6 +63,59 @@ void cloudToMat(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, cv::Mat *color, cv
 		}
 	}
 }
+
+
+void refineSurface(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
+{
+
+	time_t beforeSmooth;
+	beforeSmooth = time (NULL);
+
+// Create a KD-Tree
+  pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
+
+  // Output has the same type as the input one, it will be only smoothed
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr mls_points (new pcl::PointCloud<pcl::PointXYZRGB> ());
+
+  // Init object (second point type is for the normals, even if unused)
+  pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::Normal> mls;
+  //============================================================================
+  //OutlierRemoval 
+  pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+  sor.setInputCloud (cloud);
+  sor.setMeanK (50);
+  sor.setStddevMulThresh (1.0);
+  sor.filter (*cloud);
+
+  //************************************************
+  //Outliers removal but commented due to this error
+  //************************************************
+
+  //sor.setMeanK (50);
+  //sor.setStddevMulThresh (0.01);
+  //sor.setNegative (true);
+  //sor.filter (*cloud);
+			
+  //=============================================================================
+
+  // Set parameters
+  mls.setInputCloud (cloud);
+  mls.setSearchMethod(tree);
+  mls.setSearchRadius (0.01);
+  mls.setPolynomialFit (true);
+
+  // Reconstruct
+  mls.reconstruct (*mls_points);  // takes 1 minute for 2 pointclouds
+
+  time_t afterSmooth;
+  afterSmooth = time (NULL);
+  cout << "Smoothing Time " << afterSmooth - beforeSmooth << endl;
+  *cloud = *mls_points ; 
+  mls_points->clear();
+
+  
+}
+
 
 bool alignFrames(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *depthB, Transformation *inverse,
 				 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA, pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB)
@@ -87,7 +140,7 @@ bool alignFrames(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *dep
 	cv::imshow( "Online " , imageB );
 	cv::waitKey(30);
 
-	if(tracked > 250 || tracked < 50)
+	if(tracked > 100 || tracked < 10)
 		return true;
 
 
@@ -138,7 +191,7 @@ void downsample(pcl::PointCloud<pcl::PointXYZRGB>::Ptr original, pcl::PointCloud
        << " data points (" << pcl::getFieldsList (*original) << ").";
   pcl::VoxelGrid<pcl::PointXYZRGB> sor;
   sor.setInputCloud (original);
-  sor.setLeafSize (0.01f, 0.01f, 0.01f);
+  sor.setLeafSize (0.008f, 0.008f, 0.008f);
   sor.filter (*downsampled);
   std::cerr << "PointCloud after filtering: " << downsampled->width * downsampled->height 
        << " data points (" << pcl::getFieldsList (*downsampled) << ").";
@@ -156,8 +209,8 @@ void main1()
 	*result += *cloudA;
 	downsample(cloudA, lastAligned);
 	initializeLock.unlock();
-	cv::Mat imgA(cloudA->height - 30, cloudA->width - 30, CV_8UC3 );
-	cv::Mat depthA(cloudA->height - 30, cloudA->width - 30, CV_32F );
+	cv::Mat imgA(cloudA->height - 50, cloudA->width - 50, CV_8UC3 );
+	cv::Mat depthA(cloudA->height - 50, cloudA->width - 50, CV_32F );
 	pcl::PassThrough<pcl::PointXYZRGB> pass; 
 	pass.setInputCloud( cloudA );
 	pass.filter( *coloredA );
@@ -176,8 +229,8 @@ void main1()
 			cout << "started" << endl;
 			times++;
 
-			cv::Mat imgB(cloudB->height - 30, cloudB->width - 30, CV_8UC3 );
-			cv::Mat depthB(cloudB->height - 30, cloudB->width - 30, CV_32F );
+			cv::Mat imgB(cloudB->height - 50, cloudB->width - 50, CV_8UC3 );
+			cv::Mat depthB(cloudB->height - 50, cloudB->width - 50, CV_32F );
 			
 			// Remove the NaN values from the point cloud
 			pass.setInputCloud( cloudB );
@@ -211,9 +264,9 @@ void main1()
 				icp.setInputTarget(lastAligned);
 				icp.setMaxCorrespondenceDistance(0.1);
 				//icp.setRANSACOutlierRejectionThreshold(0.05);
-				//icp.setTransformationEpsilon(0.000001);
+				icp.setTransformationEpsilon(1e-6);
 				icp.setEuclideanFitnessEpsilon(0.0001);
-				//icp.setMaximumIterations(1000);
+				icp.setMaximumIterations(100);
 				icp.align(*transformedDownsampled, initialTransformation);
 				lastAligned->clear();
 				pcl::copyPointCloud(*transformedDownsampled, *lastAligned);
@@ -310,7 +363,7 @@ public:
 		updateOnlineLock.unlock();
 		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
 		
-		if(seconds % 10 == 0 && start && !stop)
+		if(seconds % 5 == 0 && start && !stop)
 		{
 			PointCloud<pcl::PointXYZRGB>::Ptr deep_copy (new PointCloud<pcl::PointXYZRGB>( *onlineView ) );
 		
