@@ -82,13 +82,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="openni_reader.cpp" />
     <ClCompile Include="openni_writer.cpp" />
-    <ClCompile Include="RobustMatcher.cpp" />
+    <ClCompile Include="Tracker.cpp" />
     <ClCompile Include="Transformation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Commons.h" />
     <ClInclude Include="HornMethod.h" />
-    <ClInclude Include="RobustMatcher.h" />
+    <ClInclude Include="Tracker.h" />
     <ClInclude Include="Transformation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

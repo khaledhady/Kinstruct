@@ -7,6 +7,7 @@ Kinstruct/Debug/
 *.DS_Store
 *.pcd
 *.ply
+*.mlp
 
 *.[Oo]bj
 Kinstruct.suo

@@ -18,9 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RobustMatcher.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Transformation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -33,6 +30,9 @@
     <ClCompile Include="openni_writer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Tracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Transformation.h">
@@ -41,10 +41,10 @@
     <ClInclude Include="HornMethod.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RobustMatcher.h">
+    <ClInclude Include="Commons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Commons.h">
+    <ClInclude Include="Tracker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
