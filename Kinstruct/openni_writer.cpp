@@ -12,12 +12,12 @@
 # define sleep(x) Sleep((x)*1000) 
 #endif
 
-boost::mutex saveCloud;
 
 #include "Commons.h"
 #include "Tracker.h"
 #include "HornMethod.h"
 #include "Alignment.h"
+#include "SurfaceConstruction.h"
 #include <math.h>
 #include <time.h>
 #include <boost/thread.hpp>  
@@ -26,32 +26,48 @@ boost::mutex saveCloud;
 using namespace std;
 using namespace pcl;
 int noFrames = 0;
-bool first = true;
 Alignment alignment;
+SurfaceConstruction surfaceConst;
+
+// Global cloud that will hold the reconstructed model
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr global (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+// Cloud holding the current feed from the Kinect camera
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr onlineView (new pcl::PointCloud<pcl::PointXYZRGB>);
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr result (new pcl::PointCloud<pcl::PointXYZRGB>);
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr resultColored (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+// Clouds holding the two views to be aligned
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA (new pcl::PointCloud<pcl::PointXYZRGB>);
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+// This holds that last downsampled cloud aligned
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr lastAligned (new pcl::PointCloud<pcl::PointXYZRGB>);
 
-Eigen::Matrix4f lastTransformation;
+// The global transformation
 Eigen::Matrix4f globalTransformation = Eigen::Matrix4f::Identity ();
-std::stringstream compressedData;
+
+// to hold the constructed mesh
+pcl::PolygonMesh triangles;
+
+// Mutex to manage access to the constructed model
+boost::mutex updateModelMutex;
+
+// Mutex to manage access to the online view
+boost::mutex updateOnlineMutex;
+
+// Mutext to manage any read or write to the cloud that will be used for construction
+boost::mutex updateCloudBMutex;
+boost::condition_variable condQ;
+
+// indicating any events
 bool updateOnline;
 bool updateBuilt;
 bool capturedNew;
-pcl::PolygonMesh triangles;
-boost::mutex updateModelMutex;
-boost::mutex updateOnlineMutex;
-boost::mutex updateCloudBMutex;
 bool stop;
 bool start;
 
 
-
-void main1()
+// this is the the thread responsible for aligning any new frames to the global cloud
+void alignFrames()
 {
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredA (new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledA (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -84,72 +100,66 @@ void main1()
 	while(!stop)
 	{
 		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
-		if(capturedNew)
+		while(!capturedNew)
+			condQ.wait( updateCloudBLock );
+
+		// Clear old point clouds
+		coloredB->clear();
+		downsampledB->clear();
+		transformedDownsampled->clear();
+		cout << "started" << endl;
+		times++;
+
+		// Remove the NaN values from the point cloud
+		pass.setInputCloud( cloudB );
+		pass.filter( *coloredB );
+
+		alignment.cloudToMat(cloudB, &imgB, &depthB);
+		Transformation inverse(false);
+
+		// use the two obtained frames to get the initial tansformations
+		bool align  = alignment.getInitialTransformation(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB);
+
+		// align is false if the two point clouds are same, so just continue and discard cloudB
+		// align can also be false if the two points clouds are far so tracking has failed, in that
+		// case discard the frame and wait till the user gets back to a frame that can be tracked
+		if(align )
 		{
-			// Clear old point clouds
-			coloredB->clear();
-			downsampledB->clear();
-			transformedDownsampled->clear();
-			cout << "started" << endl;
-			times++;
+			cout << "getting ICP \n";
+			time_t before;
+			before = time (NULL);
+			Eigen::Matrix4f initialTransformation;
+			inverse.get4X4Matrix(&initialTransformation);
 
-			
-			
-			// Remove the NaN values from the point cloud
-			pass.setInputCloud( cloudB );
-			pass.filter( *coloredB );
-
-			alignment.cloudToMat(cloudB, &imgB, &depthB);
-			Transformation inverse(false);
-
-			// use the two obtained frames to get the initial tansformations
-			bool align  = alignment.getInitialTransformation(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB);
-
-			// align is false if the two point clouds are same, so just continue and discard cloudB
-			// align can also be false if the two points clouds are far so tracking has failed, in that
-			// case discard the frame and wait till the user gets back to a frame that can be tracked
-			if(align )
-			{
-				cout << "getting ICP \n";
-				time_t before;
-				before = time (NULL);
-				Eigen::Matrix4f initialTransformation;
-				/*if(!first)
-					inverse.concatenate(&lastTransformation);
-				first = false;*/
-				inverse.get4X4Matrix(&initialTransformation);
-
-				// Perform ICP on the downsampled point clouds
-				alignment.downsample(coloredB, downsampledB);
-				icp.setInputCloud(downsampledB);
-				icp.setInputTarget(lastAligned);
+			// Perform ICP on the downsampled point clouds
+			alignment.downsample(coloredB, downsampledB);
+			icp.setInputCloud(downsampledB);
+			icp.setInputTarget(lastAligned);
 				
-				icp.align(*transformedDownsampled, initialTransformation);
-				lastAligned->clear();
-				pcl::copyPointCloud(*downsampledB, *lastAligned);
-				std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
-				time_t after = time (NULL);
-				cout << "Found Transformation " << after - before << endl;
-				lastTransformation = icp.getFinalTransformation();
-				boost::mutex::scoped_lock updateLock(updateModelMutex);
-				updateBuilt = true;
-				globalTransformation =  globalTransformation *  icp.getFinalTransformation();
-				transformed->clear();
-				pcl::transformPointCloud(*coloredB, *transformed, globalTransformation);
-				//compressPointCloud(transformed, result);
-				*global += *transformed;
-				updateLock.unlock();
-				cloudA = cloudB;
-				coloredA = coloredB;
-				imgB.copyTo(imgA);
-				depthB.copyTo(depthA);
-			}
-			else cout << "Frame is too close ... ignoring" << endl;
+			icp.align(*transformedDownsampled, initialTransformation);
+			lastAligned->clear();
+			pcl::copyPointCloud(*downsampledB, *lastAligned);
+			std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
+			time_t after = time (NULL);
+			cout << "Found Transformation " << after - before << endl;
+			boost::mutex::scoped_lock updateLock(updateModelMutex);
+			updateBuilt = true;
+			globalTransformation = globalTransformation * icp.getFinalTransformation();
+			transformed->clear();
+			pcl::transformPointCloud(*coloredB, *transformed, globalTransformation);
+			//surfaceConst.refineSurface(transformed);
+			//compressPointCloud(transformed, result);
+			*global += *transformed;
+			updateLock.unlock();
+			cloudA = cloudB;
+			coloredA = coloredB;
+			imgB.copyTo(imgA);
+			depthB.copyTo(depthA);
 		}
+		else cout << "Frame is too close ... ignoring" << endl;
 		capturedNew = false;
-		updateCloudBLock.unlock();
 	}
-	//fastTranguilation(global);
+	
 }
 
 void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void)
@@ -163,7 +173,7 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 		if(noFrames == 0)
 		{
 			cloudA = deep_copy;
-			boost::thread workerThread(main1);
+			boost::thread workerThread(alignFrames);
 			cout << "Started recording --> " << endl;
 			start = true;
 		}
@@ -173,6 +183,8 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 	}else if (event.getKeySym () == "p" && event.keyDown ())
 	{
 		stop = true;
+		condQ.notify_one();
+		//surfaceConst.fastTranguilation(global);
 	}else if(event.getKeySym() == "s" && event.keyDown())
 	{
 		boost::mutex::scoped_lock saveLock(updateOnlineMutex);
@@ -204,18 +216,15 @@ public:
 		pcl::copyPointCloud(*cloud, *onlineView);
 		updateOnline = true;
 		updateOnlineLock.unlock();
-		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
-		
+		boost::mutex::scoped_lock lock( updateCloudBMutex );
 		if(seconds % 5 == 0 && start && !stop)
 		{
 			PointCloud<pcl::PointXYZRGB>::Ptr deep_copy (new PointCloud<pcl::PointXYZRGB>( *onlineView ) );
-		
-			cout << "Obtained "<< noFrames + 1 << "  Frame" << endl ;
 			cloudB = deep_copy;
 			capturedNew = true;
 			noFrames++;
+			condQ.notify_one();
 		}
-		updateCloudBLock.unlock();
 	}
 
 	void run ()
@@ -244,31 +253,26 @@ void visualize()
 	viewer->registerKeyboardCallback(keyboardEventOccurred);
 
 	viewer->setBackgroundColor (0.3, 0.3, 0.3);
-	viewer->addText("Result in RGB", 10, 10, "v2 text");
+	viewer->addText("Result in RGB", 10, 10, "text");
 	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgbColored(global);
-	viewer->addPointCloud<pcl::PointXYZRGB> (global, rgbColored, "result");
 
-	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "result");
+	
 	viewer->addCoordinateSystem (1.0);
 
 	int i = 0;
 	while (!viewer->wasStopped ())
 	{
 		viewer->spinOnce (100);
-
-
 		boost::mutex::scoped_lock updateBuiltLock(updateModelMutex);
 
 		if(updateBuilt)
 		{
-			stringstream tmp;
-			tmp << i;
-			viewer->removePointCloud("result");
-			viewer->addPointCloud<pcl::PointXYZRGB> (global, rgbColored, "result");
-			//*global += *result;
-			
+			if (!viewer->updatePointCloud<pcl::PointXYZRGB>(global, rgbColored, "result")) 
+			{
+				viewer->addPointCloud<pcl::PointXYZRGB> (global, rgbColored, "result");
+				viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "result");
+			}
 			updateBuilt = false;
-			i++;
 		}
 		updateBuiltLock.unlock();
 	}   

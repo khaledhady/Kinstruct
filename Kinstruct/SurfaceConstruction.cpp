@@ -40,7 +40,9 @@ void SurfaceConstruction::refineSurface(pcl::PointCloud<pcl::PointXYZRGB>::Ptr c
   sor.setInputCloud (cloud);
   sor.setMeanK (50);
   sor.setStddevMulThresh (1.0);
-  sor.filter (*cloud);
+  sor.filter (*mls_points);
+  cloud->clear();
+  pcl::copyPointCloud(*mls_points, *cloud);
 
   //************************************************
   //Outliers removal but commented due to this error
@@ -54,19 +56,19 @@ void SurfaceConstruction::refineSurface(pcl::PointCloud<pcl::PointXYZRGB>::Ptr c
   //=============================================================================
 
   // Set parameters
-  mls.setInputCloud (cloud);
-  mls.setSearchMethod(tree);
-  mls.setSearchRadius (0.01);
-  mls.setPolynomialFit (true);
+  //mls.setInputCloud (cloud);
+  //mls.setSearchMethod(tree);
+  //mls.setSearchRadius (0.01);
+  //mls.setPolynomialFit (true);
 
-  // Reconstruct
-  mls.reconstruct (*mls_points);  // takes 1 minute for 2 pointclouds
+  //// Reconstruct
+  //mls.reconstruct (*mls_points);  // takes 1 minute for 2 pointclouds
 
-  time_t afterSmooth;
-  afterSmooth = time (NULL);
-  cout << "Smoothing Time " << afterSmooth - beforeSmooth << endl;
-  *cloud = *mls_points ; 
-  mls_points->clear();
+  //time_t afterSmooth;
+  //afterSmooth = time (NULL);
+  //cout << "Smoothing Time " << afterSmooth - beforeSmooth << endl;
+  //*cloud = *mls_points ; 
+  //mls_points->clear();
 
   
 }
@@ -112,6 +114,7 @@ void SurfaceConstruction::fastTranguilation(pcl::PointCloud<pcl::PointXYZRGB>::P
 	gp3.setInputCloud (cloud_with_normals);
 	gp3.setSearchMethod (tree2);
 	gp3.reconstruct (triangles);
+	pcl::io::saveVTKFile ("mesh.vtk", triangles);
 	//mesh = true;
-	pcl::io::savePLYFile ("mymesh.ply", triangles);
+	//pcl::io::savePLYFile ("mymesh.ply", triangles);
 }
