@@ -28,11 +28,6 @@ void Transformation::setRotation(double s, double qx, double qy, double qz, bool
 		qy/=norm;
 		qz/=norm;
 	}
-	this->a = s;
-	this->b = qx;
-	this->c = qy;
-	this->d = qz;
-
 	this->rotation[0][0] = 1-2*(qy*qy+qz*qz);   
 	this->rotation[0][1] = 2*(qx*qy-s*qz);    
 	this->rotation[0][2] = 2*(qx*qz+s*qy);    

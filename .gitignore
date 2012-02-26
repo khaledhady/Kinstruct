@@ -8,6 +8,9 @@ Kinstruct/Debug/
 *.DS_Store
 *.pcd
 *.ply
+*.mlp
+*.vtk
+CodeAnalyst/
 
 *.[Oo]bj
 Kinstruct.suo
