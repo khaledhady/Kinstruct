@@ -78,16 +78,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Alignment.cpp" />
     <ClCompile Include="HornMethod.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="openni_reader.cpp" />
     <ClCompile Include="openni_writer.cpp" />
+    <ClCompile Include="SurfaceConstruction.cpp" />
     <ClCompile Include="Tracker.cpp" />
     <ClCompile Include="Transformation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Alignment.h" />
     <ClInclude Include="Commons.h" />
     <ClInclude Include="HornMethod.h" />
+    <ClInclude Include="SurfaceConstruction.h" />
     <ClInclude Include="Tracker.h" />
     <ClInclude Include="Transformation.h" />
   </ItemGroup>

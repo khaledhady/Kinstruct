@@ -33,6 +33,12 @@
     <ClCompile Include="Tracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Alignment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SurfaceConstruction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Transformation.h">
@@ -45,6 +51,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Tracker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Alignment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SurfaceConstruction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

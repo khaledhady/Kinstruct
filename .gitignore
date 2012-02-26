@@ -8,6 +8,7 @@ Kinstruct/Debug/
 *.pcd
 *.ply
 *.mlp
+CodeAnalyst/
 
 *.[Oo]bj
 Kinstruct.suo

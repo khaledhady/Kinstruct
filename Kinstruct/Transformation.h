@@ -20,15 +20,6 @@ class Transformation
 
 		double rotation[3][3];
 		double translation[3];
-		
-
-	private:
-		double a;
-		double b;
-		double c;
-		double d;
-	/*	float rotation[3][3];
-		float translation[3];*/
 };
 
 #endif
