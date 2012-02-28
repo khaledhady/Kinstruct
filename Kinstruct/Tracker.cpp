@@ -62,7 +62,7 @@
 		
 		final.resize(k);
 		initial.resize(k);
-		cout << "correct tracking: " << k << endl;
+		//cout << "correct tracking: " << k << endl;
 
 		for(int i= 0; i < final.size(); i++ ) {
 			// draw line and circle

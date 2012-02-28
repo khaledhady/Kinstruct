@@ -11,7 +11,7 @@ bool Alignment::getInitialTransformation(cv::Mat *colorA, cv::Mat *colorB, cv::M
 				 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA, pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB)
 {
 	Tracker tracker;
-	cout << "Tracking.. " << endl ;
+	//cout << "Tracking.. " << endl ;
 	time_t before;
     before = time (NULL);
 
@@ -26,7 +26,7 @@ bool Alignment::getInitialTransformation(cv::Mat *colorA, cv::Mat *colorB, cv::M
 	time_t after;
 
 	after = time (NULL);
-	cout << "Finished Tracking " << after - before << endl;
+	//cout << "Finished Tracking " << after - before << endl;
 
 	cv::imshow( "Current keyframe " , imageA);
 	cvMoveWindow( "Current keyframe ", 0, 400);
@@ -62,14 +62,14 @@ bool Alignment::getInitialTransformation(cv::Mat *colorA, cv::Mat *colorB, cv::M
 	}
 
 	// Use horn method to get the transformation
-	cout << "getting transformation \n";
+	//cout << "getting transformation \n";
 	before = time (NULL);
 	Transformation result(false);
 	HornMethod hornMethod;
 	hornMethod.getTransformation(&setA, &setB, &result);
 	inverse->invert(&result);
 	after = time (NULL);
-	cout << "Found transformation " << after - before << endl;
+	//cout << "Found transformation " << after - before << endl;
 
 	// meaning move this frame to the next step (ICP)
 	return true;
@@ -78,14 +78,14 @@ bool Alignment::getInitialTransformation(cv::Mat *colorA, cv::Mat *colorB, cv::M
 void Alignment::downsample(pcl::PointCloud<pcl::PointXYZRGB>::Ptr original, pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled)
 {
   // Create the filtering object
-  std::cerr << "PointCloud before filtering: " << original->width * original->height 
-       << " data points (" << pcl::getFieldsList (*original) << ").";
+  //std::cerr << "PointCloud before filtering: " << original->width * original->height 
+    //   << " data points (" << pcl::getFieldsList (*original) << ").";
   pcl::VoxelGrid<pcl::PointXYZRGB> sor;
   sor.setInputCloud (original);
   sor.setLeafSize (0.05f, 0.05f, 0.05f);
   sor.filter (*downsampled);
-  std::cerr << "PointCloud after filtering: " << downsampled->width * downsampled->height 
-       << " data points (" << pcl::getFieldsList (*downsampled) << ").";
+  //std::cerr << "PointCloud after filtering: " << downsampled->width * downsampled->height 
+     //  << " data points (" << pcl::getFieldsList (*downsampled) << ").";
 }
 
 

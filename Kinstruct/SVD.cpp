@@ -136,7 +136,7 @@ rejectBadCorrespondences (const CorrespondencesPtr &all_correspondences,
 void
 computeTransformation (const PointCloud<PointXYZRGB>::Ptr &src, 
                        const PointCloud<PointXYZRGB>::Ptr &tgt,
-                       Eigen::Matrix4f &transform)
+                       CorrespondencesPtr &good_correspondences)
 {
   // Get an uniform grid of keypoints
   PointCloud<PointXYZRGB>::Ptr keypoints_src (new PointCloud<PointXYZRGB>), 
@@ -164,8 +164,7 @@ computeTransformation (const PointCloud<PointXYZRGB>::Ptr &src,
   pcl::copyPointCloud<Normal, PointNormal> (normals_tgt, t);*/
 
   // Find correspondences between keypoints in FPFH space
-  CorrespondencesPtr all_correspondences (new Correspondences), 
-                     good_correspondences (new Correspondences);
+  CorrespondencesPtr all_correspondences (new Correspondences);
   findCorrespondences (fpfhs_src, fpfhs_tgt, *all_correspondences);
 
   // Reject correspondences based on their XYZ distance
@@ -174,46 +173,46 @@ computeTransformation (const PointCloud<PointXYZRGB>::Ptr &src,
   for (int i = 0; i < good_correspondences->size (); ++i)
     std::cerr << good_correspondences->at (i) << std::endl;
   // Obtain the best transformation between the two sets of keypoints given the remaining correspondences
-  TransformationEstimationSVD<PointXYZRGB, PointXYZRGB> trans_est;
-  trans_est.estimateRigidTransformation (*keypoints_src, *keypoints_tgt, *good_correspondences, transform);
+  //TransformationEstimationSVD<PointXYZRGB, PointXYZRGB> trans_est;
+  //trans_est.estimateRigidTransformation (*keypoints_src, *keypoints_tgt, *good_correspondences, transform);
 }
 
-int
-main (int argc, char** argv)
-{
-  // Parse the command line arguments for .pcd files
-  //std::vector<int> p_file_indices;
-  //p_file_indices = parse_file_extension_argument (argc, argv, ".pcd");
-  //if (p_file_indices.size () != 2)
-  //{
-  //  print_error ("Need one input source PCD file and one input target PCD file to continue.\n");
-  //  print_error ("Example: %s source.pcd target.pcd\n", argv[0]);
-  //  return (-1);
-  //}
-
-  //// Load the files
-  //print_info ("Loading %s as source and %s as target...\n", argv[p_file_indices[0]], argv[p_file_indices[1]]);
-  src.reset (new PointCloud<PointXYZRGB>);
-  tgt.reset (new PointCloud<PointXYZRGB>);
-  if (loadPCDFile ("1.pcd", *src) == -1 || loadPCDFile ("2.pcd", *tgt) == -1)
-  {
-    print_error ("Error reading the input files!\n");
-    return (-1);
-  }
-
-  // Compute the best transformtion
-  Eigen::Matrix4f transform;
-  computeTransformation (src, tgt, transform);
-
-  std::cerr << transform << std::endl;
-  // Transform the data and write it to disk
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr output (new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::transformPointCloud (*src, *output, transform);
-  *output += *tgt;
-   pcl::visualization::CloudViewer viewer ("Simple Cloud Viewer");
-   viewer.showCloud (output);
-   while (!viewer.wasStopped ())
-   {
-   }
-  savePCDFileBinary ("source_transformed.pcd", *output);
-}
+//int
+//main (int argc, char** argv)
+//{
+//  // Parse the command line arguments for .pcd files
+//  //std::vector<int> p_file_indices;
+//  //p_file_indices = parse_file_extension_argument (argc, argv, ".pcd");
+//  //if (p_file_indices.size () != 2)
+//  //{
+//  //  print_error ("Need one input source PCD file and one input target PCD file to continue.\n");
+//  //  print_error ("Example: %s source.pcd target.pcd\n", argv[0]);
+//  //  return (-1);
+//  //}
+//
+//  //// Load the files
+//  //print_info ("Loading %s as source and %s as target...\n", argv[p_file_indices[0]], argv[p_file_indices[1]]);
+//  src.reset (new PointCloud<PointXYZRGB>);
+//  tgt.reset (new PointCloud<PointXYZRGB>);
+//  if (loadPCDFile ("1.pcd", *src) == -1 || loadPCDFile ("2.pcd", *tgt) == -1)
+//  {
+//    print_error ("Error reading the input files!\n");
+//    return (-1);
+//  }
+//
+//  // Compute the best transformtion
+//  Eigen::Matrix4f transform;
+//  computeTransformation (src, tgt, transform);
+//
+//  std::cerr << transform << std::endl;
+//  // Transform the data and write it to disk
+//  pcl::PointCloud<pcl::PointXYZRGB>::Ptr output (new pcl::PointCloud<pcl::PointXYZRGB>);
+//  pcl::transformPointCloud (*src, *output, transform);
+//  *output += *tgt;
+//   pcl::visualization::CloudViewer viewer ("Simple Cloud Viewer");
+//   viewer.showCloud (output);
+//   while (!viewer.wasStopped ())
+//   {
+//   }
+//  savePCDFileBinary ("source_transformed.pcd", *output);
+//}

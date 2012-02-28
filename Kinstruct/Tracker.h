@@ -1,14 +1,10 @@
-#ifndef COMMONS
-#define COMMONS
 #include "Commons.h"
-#endif
 
 #ifndef TRACKER
 #define TRACKER
 
 using namespace std;
 
-#include <math.h>
 
 class Tracker {
 	private:

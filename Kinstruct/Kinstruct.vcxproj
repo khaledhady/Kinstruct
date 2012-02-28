@@ -84,6 +84,7 @@
     <ClCompile Include="openni_reader.cpp" />
     <ClCompile Include="openni_writer.cpp" />
     <ClCompile Include="SurfaceConstruction.cpp" />
+    <ClCompile Include="SVD.cpp" />
     <ClCompile Include="Tracker.cpp" />
     <ClCompile Include="Transformation.cpp" />
   </ItemGroup>

@@ -1,16 +1,17 @@
 #include "SurfaceConstruction.h"
 SurfaceConstruction::SurfaceConstruction()
 {
-	pcl::octree::compression_Profiles_e compressionProfile = pcl::octree::MED_RES_ONLINE_COMPRESSION_WITH_COLOR;
-	// instantiate point cloud compression for encoding and decoding
-	pcl::octree::PointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> (compressionProfile, true);
-	pcl::octree::PointCloudCompression<pcl::PointXYZRGB>* PointCloudDecoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> ();
+	
 }
 
 void SurfaceConstruction::compressPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr uncompressed, pcl::PointCloud<pcl::PointXYZRGB>::Ptr compressed)
 {
 	compressed->clear();
 	std::stringstream compressedData;
+	pcl::octree::compression_Profiles_e compressionProfile = pcl::octree::MED_RES_ONLINE_COMPRESSION_WITH_COLOR;
+	// instantiate point cloud compression for encoding and decoding
+	pcl::octree::PointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> (compressionProfile, true);
+	pcl::octree::PointCloudCompression<pcl::PointXYZRGB>* PointCloudDecoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> ();
 
 	// compress point cloud
 	PointCloudEncoder->encodePointCloud (uncompressed, compressedData);
@@ -73,48 +74,63 @@ void SurfaceConstruction::refineSurface(pcl::PointCloud<pcl::PointXYZRGB>::Ptr c
   
 }
 
+template<typename T>
+class PCLMarchingCubesGreedyWrapper : public pcl::MarchingCubesGreedy<T>
+{ 
+        public: 
+                PCLMarchingCubesGreedyWrapper() {}; 
+                virtual ~PCLMarchingCubesGreedyWrapper() {}; 
+
+        protected: 
+                virtual void performReconstruction(pcl::PointCloud<T    >&, std::vector<pcl::Vertices>&) 
+                { 
+                        std::cout << "IS THIS EVER USED?" << std::endl; 
+                } 
+}; 
+
+//typedef pcl::PointXYZ PointType; 
+typedef pcl::PointXYZRGB PointType; 
+typedef pcl::Normal Normals;	
+//typedef pcl::PointNormal PointTypeNormal; 
+typedef pcl::PointXYZRGBNormal PointTypeNormal; 
+
 void SurfaceConstruction::fastTranguilation(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
 {
-	pcl::PolygonMesh triangles;
-	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> n;
-	pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
-	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
-	tree->setInputCloud (cloud);
-	n.setInputCloud (cloud);
-	n.setSearchMethod (tree);
-	n.setKSearch (20);
-	n.compute (*normals);
-	//* normals should not contain the point normals + surface curvatures
+	double leafSize = 0.05; 
+        float isoLevel = 0.5; 
 
-	// Concatenate the XYZ and normal fields*
-	pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_with_normals (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
-	pcl::concatenateFields (*cloud, *normals, *cloud_with_normals);
-	//* cloud_with_normals = cloud + normals
+        // Load input file */ 
+        
+        pcl::PointCloud<PointTypeNormal>::Ptr pointcloudNormal (new pcl::PointCloud<PointTypeNormal> ()); 
 
-	// Create search tree*
-	pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree2 (new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
-	tree2->setInputCloud (cloud_with_normals);
+        /* Marching Cubes Reconstruction */ 
+        pcl::PolygonMesh mesh; 
 
-	// Initialize objects
-	pcl::GreedyProjectionTriangulation<pcl::PointXYZRGBNormal> gp3;
-			  
+        // Normal estimation* 
+        pcl::NormalEstimation<PointType, PointTypeNormal> norm_est; 
+        pcl::PointCloud<Normals>::Ptr normals (new pcl::PointCloud<Normals>); 
+        pcl::search::KdTree<PointType>::Ptr tree (new pcl::search::KdTree<PointType>); 
+        tree->setInputCloud (cloud); 
+        norm_est.setInputCloud (cloud); 
+        norm_est.setSearchMethod (tree); 
+        norm_est.setKSearch(30); 
+        norm_est.compute(*pointcloudNormal); 
+        pcl::copyPointCloud (*cloud, *pointcloudNormal); 
 
-	// Set the maximum distance between connected points (maximum edge length)
-	gp3.setSearchRadius (0.025);
+        // Create the search method 
+        pcl::search::KdTree<PointTypeNormal>::Ptr tree2 (new pcl::search::KdTree<PointTypeNormal>); 
+        tree2->setInputCloud (pointcloudNormal); 
+        // Initialize objects 
+        PCLMarchingCubesGreedyWrapper<PointTypeNormal> mc; 
+        // Set parameters 
+        mc.setLeafSize(leafSize);   
+        mc.setIsoLevel(isoLevel);   //ISO: must be between 0 and 1.0 
+        mc.setSearchMethod(tree2); 
+        mc.setInputCloud(pointcloudNormal); 
+        // Reconstruct 
+        mc.reconstruct (mesh); 
 
-	// Set typical values for the parameters
-	gp3.setMu (2.5);
-	gp3.setMaximumNearestNeighbors (100);
-	gp3.setMaximumSurfaceAngle(M_PI/4); // 45 degrees
-	gp3.setMinimumAngle(M_PI/18); // 10 degrees
-	gp3.setMaximumAngle(2*M_PI/3); // 120 degrees
-	gp3.setNormalConsistency(true);
-
-	// Get result
-	gp3.setInputCloud (cloud_with_normals);
-	gp3.setSearchMethod (tree2);
-	gp3.reconstruct (triangles);
-	pcl::io::saveVTKFile ("mesh.vtk", triangles);
-	//mesh = true;
-	//pcl::io::savePLYFile ("mymesh.ply", triangles);
+        //Saving to disk in VTK format: 
+        pcl::io::saveVTKFile ("nice.vtk", mesh); 
+        pcl::io::savePLYFile ("nice.ply", mesh); 
 }
