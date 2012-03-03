@@ -21,7 +21,7 @@ bool Alignment::getInitialTransformation(cv::Mat *colorA, cv::Mat *colorB, cv::M
 	colorB->copyTo(imageB);
 
 	// Track
-    int tracked = tracker.track(imageA, imageB);
+    double tracked = tracker.track(imageA, imageB);
 
 	time_t after;
 

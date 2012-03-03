@@ -34,6 +34,11 @@ std::vector<cv::Mat> keyframes;
 
 // Global cloud that will hold the reconstructed model
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr global (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr graph (new pcl::PointCloud<pcl::PointXYZ>);
+
+
 pcl::registration::ELCH<pcl::PointXYZRGB> elch;
 pcl::PointXYZ kinectPos(0, 0, 0);
 pcl::PointXYZ frameCenter(0, 0, 0);
@@ -120,28 +125,47 @@ void hist(cv::Mat src)
 
    cv::waitKey(30);
 }
-bool checkLoop(cv::Mat imgA, int no)
+int checkLoop(int no)
 {
-	Tracker tracker;
-	for(int i = 0; i < keyframes.size() - 1; i++)
+		
+  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+  kdtree.setInputCloud (graph);
+
+
+  // K nearest neighbor search
+
+  int K = 5;
+
+  std::vector<int> pointIdxNKNSearch(K);
+  std::vector<float> pointNKNSquaredDistance(K);
+
+  std::cout << "Frame number = " << no << endl;
+
+  if ( kdtree.radiusSearch(kinectPos, 0.15, pointIdxNKNSearch, pointNKNSquaredDistance, 5) > 0 )
+  {
+	  double min = 0.0225;
+	  double minIndex = -1;
+    for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
 	{
-		if(no != i)
+		if(pointIdxNKNSearch[i] < no - 5 && pointNKNSquaredDistance[i] <= min)
 		{
-			hist(imgA);
-			hist(keyframes[i]);
-			/*cv::Mat imageA, imageB;
-			imgA.copyTo(imageA);
-			keyframes[i].copyTo(imageB);
-			int tracked = tracker.track(imageA, imageB);
-			cout << "got tracked " << tracked << endl;
-			if(tracked > 70)
-			{
-					cout << "LOOP ?? " << endl;
-					return true;
-			}*/
+			min = pointNKNSquaredDistance[0];
+			minIndex = pointIdxNKNSearch[i];
 		}
+		//if(pointIdxNKNSearch[i] != no - 1 && pointIdxNKNSearch[i] != no - 2 && pointIdxNKNSearch[i] != no - 3)
+		//{
+		//	cout << pointIdxNKNSearch[i] << endl;
+		//  /*std::cout << "    "  <<   graph->points[ pointIdxNKNSearch[i] ].x 
+		//			<< " " << graph->points[ pointIdxNKNSearch[i] ].y 
+		//			<< " " << graph->points[ pointIdxNKNSearch[i] ].z 
+		//			<< " (squared distance: " << pointNKNSquaredDistance[i] << ")" << std::endl;*/
+		//}
 	}
-	return false;
+	std::cout << "index to match with  = " << minIndex << endl;
+	return minIndex;
+  }
+	return -1;
 }
 
 void setFrameCenter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointXYZ &frameCenter)
@@ -214,19 +238,20 @@ void alignFrames()
 	//boost::graph_traits<pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraph>::vertex_descriptor ok;
 	 
 	 
+	 graph->points.push_back(kinectPos);
+	 elch.addPointCloud(coloredA);
+	 elch.addPointCloud(coloredA);
 	 
-	 elch.addPointCloud(coloredA);
-	 elch.addPointCloud(coloredA);
-	 elch.setLoopStart(1);
 	 
 		 
 	 
 	int no = 1;
+	int framesBeforeCheck = 7;
 	//keyframes.push_back(imgA);
 	while(!stop)
 	{
 		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
-		while(!capturedNew)
+		while(!capturedNew && !stop)
 			condQ.wait( updateCloudBLock );
 
 		// Clear old point clouds
@@ -281,49 +306,69 @@ void alignFrames()
 			pcl::transformPointCloud(*coloredB, *transformed, globalTransformation);
 			
 			elch.addPointCloud(transformed);
-			 
-			
-			//surfaceConst.compressPointCloud(transformed, result);
+			Eigen::Matrix3f rot;
+			Eigen::Vector3f trans;
+			pcl::PointXYZ origin(0, 0, 0);
+			rot = globalTransformation.block<3, 3> (0, 0);
+			trans = globalTransformation.block<3, 1> (0, 3);
+			kinectPos.getVector3fMap () = rot * origin.getVector3fMap () + trans;
+			graph->points.push_back(kinectPos);
 			*global += *transformed;
-			updateLock.unlock();
+			 no++;
+			 int loopStart = -1;
+			 if(framesBeforeCheck == 0)
+			   loopStart = checkLoop(no);
+			if(loopStart != -1)
+			{
+				framesBeforeCheck = 7;
+				elch.setLoopStart(loopStart + 1);
+				
+				elch.setLoopEnd(no);
+				cout << "Optimizing" << endl;
+				elch.compute();
+				cout << "optimized" << endl;
+				global->clear();
+				pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraphPtr mygraph = elch.getLoopGraph();
+				for (size_t i = 0; i < num_vertices (*mygraph); i++)
+			  {
+   
+				  *global += *(*mygraph)[i].cloud;
+			  }
+				updateBuilt = true;
+				cout << "optimized" << endl;
+			}
+			
+			
+			
+			
+			
+			
+			
 			cloudA = cloudB;
 			coloredA = coloredB;
 			imgB.copyTo(imgA);
 			depthB.copyTo(depthA);
-			no++;
-			elch.setLoopEnd(no);
+			updateLock.unlock();
+			if(framesBeforeCheck != 0)
+				framesBeforeCheck--;
 		}
 		//else cout << "Frame is too close ... ignoring" << endl;
 		capturedNew = false;
 		
 		
 	}
-	
+	/*elch.compute();
+	cout << "optimized" << endl;
+	global->clear();
+	pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraphPtr mygraph = elch.getLoopGraph();
+	for (size_t i = 0; i < num_vertices (*mygraph); i++)
+  {
+   
+	  *global += *(*mygraph)[i].cloud;
+  }
+	updateBuilt = true;
+	cout << "optimized" << endl;*/
 	cout << "Finished" << endl;
-	
-	/*surfaceConst.fastTranguilation(global);*/
- 
- // Use your favorite pairwise correspondence estimation algorithm(s)
- //corrs_0_to_1 = someAlgo (cloud_0, cloud_1);
- //corrs_1_to_2 = someAlgo (cloud_1, cloud_2);
- //corrs_2_to_0 = someAlgo (lum.getPointCloud (2), lum.getPointCloud (0));
- //// Add the correspondence results as edges to the SLAM graph
- //lum.setCorrespondences (0, 1, corrs_0_to_1);
- //lum.setCorrespondences (1, 2, corrs_1_to_2);
- //lum.setCorrespondences (2, 0, corrs_2_to_0);
- //// Change the computation parameters
- //lum.setMaxIterations (10);
- //lum.setConvergenceDistance (0);
- //lum.setConvergenceAngle (0);
- // Perform the actual LUM computation
-// lum.compute ();
- // Return the concatenated point cloud result
- //cloud_out = lum.getConcatenatedCloud ();
- // Return the separate point cloud transformations
- /*for(int i = 0; i < lum.getNumVertices (); i++)
- {
-   transforms_out[i] = lum.getTransformation (i);
- }*/
 	
 }
 
@@ -350,18 +395,8 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 		stop = true;
 		//surfaceConst.fastTranguilation(global);
 		condQ.notify_one();
-		elch.compute();
-	cout << "optimized" << endl;
-	global->clear();
-	pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraphPtr graph = elch.getLoopGraph();
-	for (size_t i = 0; i < num_vertices (*graph); i++)
-  {
-   
-	  *global += *(*graph)[i].cloud;
-  }
-	updateBuilt = true;
-	cout << "optimized" << endl;
-	}else if(event.getKeySym() == "s" && event.keyDown())
+		
+	}else if(event.getKeySym() == "a" && event.keyDown())
 	{
 		boost::mutex::scoped_lock saveLock(updateOnlineMutex);
 		std::cout << "s was pressed => saving" << std::endl;
@@ -435,11 +470,12 @@ void visualize()
 	
 	viewer->addCoordinateSystem (1.0);
 
-	Eigen::Matrix3f rot;
-	Eigen::Vector3f trans;
-	pcl::PointXYZ origin(0, 0, 0);
+	
 	pcl::PointXYZ currentFrameCenter(0, 0, 0);
-	viewer->addSphere(kinectPos, 0.05, 0.5, 0.5, 0.5, "pos");
+	viewer->addSphere(kinectPos, 0.05, 1, 0, 0, "pose");
+	viewer->addText3D ("Kinect", kinectPos, 0.05, 0, 1, 0, "kinect");
+	//graph->points.push_back(kinectPos);
+	
 	int i = 0;
 	while (!viewer->wasStopped ())
 	{
@@ -455,11 +491,9 @@ void visualize()
 			}
 			std::stringstream tmp;
 			tmp << i;
-			viewer->resetCamera();
+			//viewer->resetCamera();
 			
-			rot = globalTransformation.block<3, 3> (0, 0);
-			trans = globalTransformation.block<3, 1> (0, 3);
-			kinectPos.getVector3fMap () = rot * origin.getVector3fMap () + trans;
+			
 			//currentFrameCenter.getVector3fMap () = rot * frameCenter.getVector3fMap () + trans;
 			//cout << frameCenter.x << endl;
 			//frameCorners->points[1].getVector3fMap () = rot * frameCorners->points[1].getVector3fMap () + trans;
@@ -467,16 +501,13 @@ void visualize()
 			//frameCorners->points[3].getVector3fMap () = rot * frameCorners->points[3].getVector3fMap () + trans;
 			////pcl::transformPointCloud(*frameCorners, *frameCorners, globalTransformation);
 
-			//viewer->addLine(kinectPos, frameCenter, tmp.str());
-			//tmp << i;
-			//viewer->addLine(kinectPos, frameCorners->points[1], tmp.str());
-			//tmp << i;
-			//viewer->addLine(kinectPos, frameCorners->points[2], tmp.str());
-			//tmp << i;
-			//viewer->addLine(kinectPos, frameCorners->points[3], tmp.str());
-			//viewer->addText3D("here", kinectPos, 0., 1, 1, 1, tmp.str());
-			viewer->removeShape("pos");
-			viewer->addSphere(kinectPos, 0.05, 0.5, 0.5, 0.5, "pos");
+			//viewer->addLine(kinectPos, currentFrameCenter, 0, 0, 1, tmp.str());
+			tmp << i;
+			//viewer->removeShape("pose");
+			viewer->removeText3D("kinect");
+			viewer->addSphere(kinectPos, 0.05, 1, 0, 0, tmp.str());
+			viewer->addText3D ("Kinect", kinectPos, 0.05, 0, 1, 0, "kinect");
+
 			updateBuilt = false;
 			i++;
 		}

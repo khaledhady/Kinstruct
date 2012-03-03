@@ -4,7 +4,7 @@
 	}
 
 	// Tracks points from image1 to image2
-	int Tracker::track(cv::Mat& image1,	cv::Mat& image2) {
+	double Tracker::track(cv::Mat& image1,	cv::Mat& image2) {
 
 		// Get the grayscale images from image1 and image2
 		cv::Mat grayA, grayB;
@@ -24,6 +24,7 @@
 		0.01, // quality level
 		10, cv::Mat(), 3, 0, 0.04); // min distance between two features
 
+		double featuresCount = initial.size();
 		// Mark the feature points on the first image
 		for(int i= 0; i < initial.size(); i++ ) {
 			cv::circle(image1, initial[i], 3, cv::Scalar(255,0,0),-1);
@@ -35,7 +36,7 @@
 			initial, // input point positions in first image
 			selPoints2, // output point positions in the 2nd image
 			status, // tracking success
-			err, cv::Size(5,5), 5, cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, .3 ));
+			err, cv::Size(10,10), 5, cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, .3 ));
 		
 
 		int k=0;
@@ -69,6 +70,10 @@
 			cv::line(image2, initial[i], final[i], cv::Scalar(255,0,0));
 			cv::circle(image2, final[i], 3,	cv::Scalar(0,255,0),-1);
 		}
+
+		/*if(k <= 10)
+			return 0;
+		return k / featuresCount;*/
 		return k;
 	}
 

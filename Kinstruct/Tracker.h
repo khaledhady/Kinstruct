@@ -16,7 +16,7 @@ class Tracker {
 		Tracker();
 		std::vector<cv::Point2f> initial;
 		std::vector<cv::Point2f> final;
-		int track(cv::Mat& image1,	cv::Mat& image2);
+		double track(cv::Mat& image1,	cv::Mat& image2);
 };
 
 #endif
