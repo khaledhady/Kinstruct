@@ -23,7 +23,6 @@
 #include <boost/thread.hpp>  
 #include <boost/date_time.hpp>  
 #include "pcl/win32_macros.h"
-#include "SVD.cpp"
 using namespace std;
 using namespace pcl;
 int noFrames = 0;
@@ -196,6 +195,23 @@ void setFrameCenter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointXYZ 
 	frameCenter.z = avgZ;
 }
 
+void globalOptimization()
+{
+
+	cout << "started thread" << endl;
+	elch.compute();
+	cout << "Computed" << endl;
+	boost::mutex::scoped_lock updateLock(updateModelMutex);
+	global->clear();
+	pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraphPtr mygraph = elch.getLoopGraph();
+	for (size_t i = 0; i < num_vertices (*mygraph); i++)
+	{
+   
+		*global += *(*mygraph)[i].cloud;
+	}
+	updateBuilt = true;
+	cout << "finished optimization" << endl;
+}
 
 // this is the the thread responsible for aligning any new frames to the global cloud
 void alignFrames()
@@ -233,21 +249,16 @@ void alignFrames()
 	cout << "initial x" << frameCenter.x;
 	alignment.cloudToMat(cloudA, &imgA, &depthA);
 
-	 /*pcl::registration::LUM<pcl::PointXYZRGB> lum;
-	 pcl::registration::LUM<pcl::PointXYZRGB>::Vertex first = lum.addPointCloud(cloudA);*/
-	//boost::graph_traits<pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraph>::vertex_descriptor ok;
 	 
-	 
-	 graph->points.push_back(kinectPos);
-	 elch.addPointCloud(coloredA);
-	 elch.addPointCloud(coloredA);
+	graph->points.push_back(kinectPos);
+	elch.addPointCloud(coloredA);
+	elch.addPointCloud(coloredA);
 	 
 	 
 		 
 	 
 	int no = 1;
-	int framesBeforeCheck = 7;
-	//keyframes.push_back(imgA);
+	int framesBeforeCheck = 10;
 	while(!stop)
 	{
 		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
@@ -267,10 +278,6 @@ void alignFrames()
 
 		alignment.cloudToMat(cloudB, &imgB, &depthB);
 
-		//keyframes.push_back(imgB);
-
-		/*if(checkLoop(imgA, no))
-			break;*/
 
 		Transformation inverse(false);
 
@@ -304,7 +311,6 @@ void alignFrames()
 			updateBuilt = true;
 			globalTransformation = globalTransformation * icp.getFinalTransformation();
 			pcl::transformPointCloud(*coloredB, *transformed, globalTransformation);
-			
 			elch.addPointCloud(transformed);
 			Eigen::Matrix3f rot;
 			Eigen::Vector3f trans;
@@ -314,41 +320,46 @@ void alignFrames()
 			kinectPos.getVector3fMap () = rot * origin.getVector3fMap () + trans;
 			graph->points.push_back(kinectPos);
 			*global += *transformed;
+			updateLock.unlock();
 			 no++;
-			 int loopStart = -1;
-			 if(framesBeforeCheck == 0)
-			   loopStart = checkLoop(no);
-			if(loopStart != -1)
-			{
-				framesBeforeCheck = 7;
-				elch.setLoopStart(loopStart + 1);
-				
-				elch.setLoopEnd(no);
-				cout << "Optimizing" << endl;
-				elch.compute();
-				cout << "optimized" << endl;
-				global->clear();
-				pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraphPtr mygraph = elch.getLoopGraph();
-				for (size_t i = 0; i < num_vertices (*mygraph); i++)
-			  {
-   
-				  *global += *(*mygraph)[i].cloud;
-			  }
-				updateBuilt = true;
-				cout << "optimized" << endl;
-			}
-			
-			
-			
-			
-			
+			// int loopStart = -1;
+			// if(framesBeforeCheck == 0)
+			//   loopStart = checkLoop(no);
+			//if(loopStart != -1)
+			//{
+			//	framesBeforeCheck = 7;
+			//	elch.setLoopStart(loopStart + 1);
+			//	
+			//	elch.setLoopEnd(no);
+			//	cout << "Optimizing" << endl;
+			//	//boost::thread optimization(globalOptimization);
+			//	globalOptimization();
+			//	cout << "After starting optimizing thread" << endl;
+			//}
 			
 			
 			cloudA = cloudB;
 			coloredA = coloredB;
 			imgB.copyTo(imgA);
 			depthB.copyTo(depthA);
-			updateLock.unlock();
+
+			//int loopStart = -1;
+			/* if(framesBeforeCheck == 0)*/
+			   int loopStart = checkLoop(no);
+			if(loopStart != -1)
+			{
+				framesBeforeCheck = 10;
+				elch.setLoopStart(loopStart + 1);
+				
+				elch.setLoopEnd(no);
+				cout << "Optimizing" << endl;
+				//boost::thread optimization(globalOptimization);
+				globalOptimization();
+				cout << "After starting optimizing thread" << endl;
+			}
+
+
+			
 			if(framesBeforeCheck != 0)
 				framesBeforeCheck--;
 		}
@@ -357,17 +368,6 @@ void alignFrames()
 		
 		
 	}
-	/*elch.compute();
-	cout << "optimized" << endl;
-	global->clear();
-	pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraphPtr mygraph = elch.getLoopGraph();
-	for (size_t i = 0; i < num_vertices (*mygraph); i++)
-  {
-   
-	  *global += *(*mygraph)[i].cloud;
-  }
-	updateBuilt = true;
-	cout << "optimized" << endl;*/
 	cout << "Finished" << endl;
 	
 }
