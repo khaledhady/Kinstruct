@@ -29,7 +29,7 @@ int noFrames = 0;
 Alignment alignment;
 SurfaceConstruction surfaceConst;
 
-std::vector<cv::Mat> keyframes;
+std::vector<cv::Mat *> keyframes;
 
 // Global cloud that will hold the reconstructed model
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr global (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -44,6 +44,7 @@ pcl::PointXYZ frameCenter(0, 0, 0);
 
 // Cloud holding the current feed from the Kinect camera
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr onlineView (new pcl::PointCloud<pcl::PointXYZRGB>);
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr temp (new pcl::PointCloud<pcl::PointXYZRGB>);
 
 // Clouds holding the two views to be aligned
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -68,6 +69,8 @@ boost::mutex updateOnlineMutex;
 boost::mutex updateCloudBMutex;
 boost::condition_variable condQ;
 
+boost::mutex optimizingMutex;
+bool optimizing;
 // indicating any events
 bool updateOnline;
 bool updateBuilt;
@@ -139,7 +142,7 @@ int checkLoop(int no)
   std::vector<int> pointIdxNKNSearch(K);
   std::vector<float> pointNKNSquaredDistance(K);
 
-  std::cout << "Frame number = " << no << endl;
+  //std::cout << "Frame number = " << no << endl;
 
   if ( kdtree.radiusSearch(kinectPos, 0.15, pointIdxNKNSearch, pointNKNSquaredDistance, 5) > 0 )
   {
@@ -147,21 +150,54 @@ int checkLoop(int no)
 	  double minIndex = -1;
     for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
 	{
-		if(pointIdxNKNSearch[i] < no - 5 && pointNKNSquaredDistance[i] <= min)
+		if(pointIdxNKNSearch[i] < no - 10 && pointNKNSquaredDistance[i] <= min)
 		{
 			min = pointNKNSquaredDistance[0];
 			minIndex = pointIdxNKNSearch[i];
 		}
-		//if(pointIdxNKNSearch[i] != no - 1 && pointIdxNKNSearch[i] != no - 2 && pointIdxNKNSearch[i] != no - 3)
-		//{
-		//	cout << pointIdxNKNSearch[i] << endl;
-		//  /*std::cout << "    "  <<   graph->points[ pointIdxNKNSearch[i] ].x 
-		//			<< " " << graph->points[ pointIdxNKNSearch[i] ].y 
-		//			<< " " << graph->points[ pointIdxNKNSearch[i] ].z 
-		//			<< " (squared distance: " << pointNKNSquaredDistance[i] << ")" << std::endl;*/
-		//}
+		
 	}
-	std::cout << "index to match with  = " << minIndex << endl;
+	if (minIndex != -1)
+	{
+		Tracker tracker;
+	
+		/*tracker.setConfidenceLevel(0.98);
+		tracker.setMinDistanceToEpipolar(1.0);
+		tracker.setRatio(0.65f);*/
+		cv::Ptr<cv::FeatureDetector> pfd=
+		new cv::SurfFeatureDetector(10);
+		//Estimating Projective Relations in Images
+		//240
+		//rmatcher.setFeatureDetector(pfd);
+		//// Match the two images
+		cout << keyframes.size() << "   ----- " << endl;
+		std::vector<cv::DMatch> matches;
+		std::vector<cv::KeyPoint> keypoints1, keypoints2;
+		cv::Mat fun = tracker.match(*keyframes.at(keyframes.size() -1),*keyframes.at(minIndex),
+		matches, keypoints1, keypoints2);
+		
+	cout << "index of match " << minIndex << endl;
+		cout << "found matches " <<  matches.size() << endl;
+		if (matches.size() < 10)
+		{
+			minIndex = -1;
+			cout << "Not enough visual matches" << endl;
+		}
+		else
+		{
+			cv::Mat imageMatches;
+			cv::drawMatches(
+			*keyframes.at(keyframes.size() -1),keypoints1, // 1st image and its keypoints
+			*keyframes.at(minIndex),keypoints2, // 2nd image and its keypoints
+			matches, // the matches
+			imageMatches, // the image produced
+			cv::Scalar(255,255,255)); // color of the lines
+			cv::imshow( "Matches " , imageMatches);
+			cv::waitKey(30);
+		}
+
+	}
+	//std::cout << "index to match with  = " << minIndex << endl;
 	return minIndex;
   }
 	return -1;
@@ -209,7 +245,9 @@ void globalOptimization()
    
 		*global += *(*mygraph)[i].cloud;
 	}
+	//*global += *temp;
 	updateBuilt = true;
+	optimizing = false;
 	cout << "finished optimization" << endl;
 }
 
@@ -226,9 +264,9 @@ void alignFrames()
 	pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
 	icp.setMaxCorrespondenceDistance(0.1);
 	//icp.setRANSACOutlierRejectionThreshold(0.05);
-	//icp.setTransformationEpsilon(1e-6);
+	icp.setTransformationEpsilon(1e-6);
 	icp.setEuclideanFitnessEpsilon(0.00001);
-	icp.setMaximumIterations(100);
+	icp.setMaximumIterations(30);
 	boost::mutex::scoped_lock initializeLock(updateModelMutex);
 	updateBuilt = true;
 	*global += *cloudA;
@@ -237,28 +275,24 @@ void alignFrames()
 	initializeLock.unlock();
 	cv::Mat imgA(cloudA->height - 50, cloudA->width - 50, CV_8UC3 );
 	cv::Mat depthA(cloudA->height - 50, cloudA->width - 50, CV_32F );
-	cv::Mat imgB(cloudA->height - 50, cloudA->width - 50, CV_8UC3 );
-	cv::Mat depthB(cloudA->height - 50, cloudA->width - 50, CV_32F );
+	
 
 	pcl::PassThrough<pcl::PointXYZRGB> pass; 
 	pass.setInputCloud( cloudA );
 	pass.filter( *coloredA );
 
-
-	setFrameCenter(coloredA, frameCenter);
-	cout << "initial x" << frameCenter.x;
 	alignment.cloudToMat(cloudA, &imgA, &depthA);
-
-	 
+	keyframes.push_back(new cv::Mat(imgA));
 	graph->points.push_back(kinectPos);
 	elch.addPointCloud(coloredA);
 	elch.addPointCloud(coloredA);
 	 
 	 
-		 
+	//pcl::io::savePCDFileBinary("0.pcd", *cloudA);
 	 
 	int no = 1;
-	int framesBeforeCheck = 10;
+	int framesBeforeCheck = 20;
+	long totalTime = 0;
 	while(!stop)
 	{
 		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
@@ -269,6 +303,8 @@ void alignFrames()
 		coloredB->clear();
 		downsampledB->clear();
 		transformedDownsampled->clear();
+		cv::Mat imgB(cloudA->height - 50, cloudA->width - 50, CV_8UC3 );
+		cv::Mat depthB(cloudA->height - 50, cloudA->width - 50, CV_32F );
 		//cout << "started" << endl;
 		
 
@@ -280,15 +316,23 @@ void alignFrames()
 
 
 		Transformation inverse(false);
-
+		time_t beforeTracking;
+		beforeTracking = time (NULL);
+		
 		// use the two obtained frames to get the initial tansformations
 		bool align  = alignment.getInitialTransformation(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB);
-
+		//bool align  = alignment.getInitialTransformationSURF(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB);
+		time_t afterTracking = time (NULL);
+		totalTime += afterTracking - beforeTracking;
+		//cout << "Found initial " << afterTracking - beforeTracking << endl;
 		// align is false if the two point clouds are same, so just continue and discard cloudB
 		// align can also be false if the two points clouds are far so tracking has failed, in that
 		// case discard the frame and wait till the user gets back to a frame that can be tracked
 		if(align )
 		{
+			//stringstream noString;
+			//noString << no << ".pcd";
+			//pcl::io::savePCDFileBinary(noString.str(), *cloudB);
 			pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
 			//cout << "getting ICP \n";
 			time_t before;
@@ -302,10 +346,11 @@ void alignFrames()
 			icp.setInputTarget(lastAligned);
 				
 			icp.align(*transformedDownsampled, initialTransformation);
+			time_t after = time (NULL);
 			lastAligned->clear();
 			pcl::copyPointCloud(*downsampledB, *lastAligned);
 			//std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
-			time_t after = time (NULL);
+			totalTime += after - before;
 			//cout << "Found Transformation " << after - before << endl;
 			boost::mutex::scoped_lock updateLock(updateModelMutex);
 			updateBuilt = true;
@@ -320,45 +365,30 @@ void alignFrames()
 			kinectPos.getVector3fMap () = rot * origin.getVector3fMap () + trans;
 			graph->points.push_back(kinectPos);
 			*global += *transformed;
+			//*temp += *transformed;
 			updateLock.unlock();
+			keyframes.push_back(new cv::Mat(imgB));
 			 no++;
-			// int loopStart = -1;
-			// if(framesBeforeCheck == 0)
-			//   loopStart = checkLoop(no);
-			//if(loopStart != -1)
-			//{
-			//	framesBeforeCheck = 7;
-			//	elch.setLoopStart(loopStart + 1);
-			//	
-			//	elch.setLoopEnd(no);
-			//	cout << "Optimizing" << endl;
-			//	//boost::thread optimization(globalOptimization);
-			//	globalOptimization();
-			//	cout << "After starting optimizing thread" << endl;
-			//}
+			 int loopStart = -1;
+			 if(framesBeforeCheck == 0)
+			   loopStart = checkLoop(no);
+			if(loopStart != -1)
+			{
+				framesBeforeCheck = 20;
+				elch.setLoopStart(loopStart + 1);
+				
+				elch.setLoopEnd(no);
+				cout << "Optimizing" << endl;
+				boost::thread optimization(globalOptimization);
+				//globalOptimization();
+				cout << "After starting optimizing thread" << endl;
+			}
 			
 			
 			cloudA = cloudB;
 			coloredA = coloredB;
 			imgB.copyTo(imgA);
 			depthB.copyTo(depthA);
-
-			//int loopStart = -1;
-			/* if(framesBeforeCheck == 0)*/
-			   int loopStart = checkLoop(no);
-			if(loopStart != -1)
-			{
-				framesBeforeCheck = 10;
-				elch.setLoopStart(loopStart + 1);
-				
-				elch.setLoopEnd(no);
-				cout << "Optimizing" << endl;
-				//boost::thread optimization(globalOptimization);
-				globalOptimization();
-				cout << "After starting optimizing thread" << endl;
-			}
-
-
 			
 			if(framesBeforeCheck != 0)
 				framesBeforeCheck--;
@@ -368,7 +398,8 @@ void alignFrames()
 		
 		
 	}
-	cout << "Finished" << endl;
+	pcl::io::savePCDFileBinary("helal.pcd", *global);
+	cout << "Total time " << totalTime << endl;
 	
 }
 
@@ -492,16 +523,6 @@ void visualize()
 			std::stringstream tmp;
 			tmp << i;
 			//viewer->resetCamera();
-			
-			
-			//currentFrameCenter.getVector3fMap () = rot * frameCenter.getVector3fMap () + trans;
-			//cout << frameCenter.x << endl;
-			//frameCorners->points[1].getVector3fMap () = rot * frameCorners->points[1].getVector3fMap () + trans;
-			//frameCorners->points[2].getVector3fMap () = rot * frameCorners->points[2].getVector3fMap () + trans;
-			//frameCorners->points[3].getVector3fMap () = rot * frameCorners->points[3].getVector3fMap () + trans;
-			////pcl::transformPointCloud(*frameCorners, *frameCorners, globalTransformation);
-
-			//viewer->addLine(kinectPos, currentFrameCenter, 0, 0, 1, tmp.str());
 			tmp << i;
 			//viewer->removeShape("pose");
 			viewer->removeText3D("kinect");

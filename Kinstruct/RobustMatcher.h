@@ -9,8 +9,6 @@
 using namespace std;
 
 /* Using the GLUT library for the base windowing setup */
-#include <GL/glut.h>
-#include <GL/gl.h>
 #include <math.h>
 
 class RobustMatcher {

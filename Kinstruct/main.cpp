@@ -81,11 +81,158 @@
 //    std::cout << "Worker: finished" << std::endl;  
 //}  
 //
+//
+//double fx = 517.3	;
+//double fy = 516.5 ;
+//double cx = 318.6 ;
+//double cy = 255.3 ;
+//double ds = 1.0   ;
+//
+//int factor = 5000 ;
+//
+//void fillPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, IplImage *depth, cv::Mat &color)
+//{
+//	//cout << "here";
+//	int i = 0;
+//	int j = 0;
+//	cloud->resize(640 * 480);
+//	cloud->height = 480;
+//	cloud->width = 640;
+//	int pixelIndex = 0;
+//	 double last = 0;
+//	 int count = 0;
+//	for(i = 0; i < color.rows; i++)
+//		//cout << i << j <<endl;
+//	  for(j = 0; j < color.cols; j++)
+//	  {
+//		  //cout <<endl << depth.type() <<endl;
+//		 // cout << i << j <<endl;
+//		  CvScalar s;
+//			s = cvGet2D(depth,i,j);
+//			
+//		  
+//		  
+//		  
+//		short ok = ((short*)(depth->imageData + i*depth->widthStep/2))[j];
+//		  //short ok = s.val[0];
+//		  /*cout << s.val[0] << endl;
+//		  cout << s.val[1] << endl;
+//		  cout << s.val[2] << endl;
+//		  cout << s.val[3] << endl;*/
+//		  //cout << value << endl;
+//		  /*if(value == 0)
+//		  {
+//			  cout << "error";
+//			  continue;
+//		  }*/
+//		  /*if(ok == 0)
+//			  continue;*/
+//		/*if(ok == 0)
+//			continue;*/
+//		  double Z = ((double)ok / 1000.0);
+//		  if(last != Z)
+//		  {
+//			  //cout << ok << endl;
+//			  count++;
+//		  }
+//		  last = Z;
+//		double X = (double)(j+ 1 - 320.0)* Z / 570.0;
+//		double Y = (double)(i+ 1 - 320.0)* Z / 570.0;
+//		//cout << "X " << X << " " << "Y " << Y << " " << "Z " << Z << endl;
+//		/*pcl::PointXYZRGB point (color.at<cv::Vec3b>(i,j)[0], color.at<cv::Vec3b>(i,j)[1], color.at<cv::Vec3b>(i,j)[2]);*/
+//		 // cout << X << endl; 
+//		if(ok == 0)
+//		{
+//			X = 0;
+//			Y = 0;
+//			Z = 0;
+//		}
+//		cloud->points[pixelIndex].x = X;
+//			cloud->points[pixelIndex].y = Y;
+//			cloud->points[pixelIndex].z = Z;
+//			int blue = color.at<cv::Vec3b>(i,j)[0];
+//			int green = color.at<cv::Vec3b>(i,j)[1];
+//			int red = color.at<cv::Vec3b>(i,j)[2];
+//			uint32_t rgb = (static_cast<uint32_t>(red) << 16 |
+//              static_cast<uint32_t>(green) << 8 | static_cast<uint32_t>(blue));
+//			cloud->points[pixelIndex].rgb = *reinterpret_cast<float*>(&rgb);
+//			pixelIndex++;
+//	  }
+//	  cout << pixelIndex << endl;
+//}
+//
 //int main()
+//{
+//	//cv::Mat color(480, 640, CV_8UC3 );
+//	
+//	//cv::Mat color = cv::imread("1305031103.275370.png");
+//	cv::Mat color = cv::imread("desk_1_1.png");
+//	//cv::Mat color = cv::imread("1305031102.175304.png");
+//	
+//	
+//	cv::imshow("ok", color);
+//	cv::waitKey();
+//	IplImage* img=cvCreateImage(cvSize(640,480),IPL_DEPTH_16U,1);
+//	//img = cvLoadImage("1305031103.262576.png");
+//	//img = cvLoadImage("1305031102.160407.png", CV_LOAD_IMAGE_UNCHANGED );
+//	img = cvLoadImage("desk_1_1_depth.png", CV_LOAD_IMAGE_UNCHANGED);
+//	pcl::PointCloud<pcl::PointXYZRGB>::Ptr ok (new pcl::PointCloud<pcl::PointXYZRGB>);
+//	fillPointCloud(ok, img, color);
+//	pcl::io::savePCDFileBinary("2.pcd", *ok);
+//	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("Kinstruct"));
+//	viewer->setBackgroundColor (0, 0, 0);
+//
+//	viewer->setBackgroundColor (0.3, 0.3, 0.3);
+//	viewer->addText("Result in RGB", 10, 10, "text");
+//	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgbColored(ok);
+//
+//	
+//	viewer->addCoordinateSystem (1.0);
+//	viewer->resetCameraViewpoint();
+//	
+//	pcl::PointXYZ currentFrameCenter(0, 0, 0);
+//	//viewer->addSphere(kinectPos, 0.05, 1, 0, 0, "pose");
+//	//viewer->addText3D ("Kinect", kinectPos, 0.05, 0, 1, 0, "kinect");
+//	//graph->points.push_back(kinectPos);
+//	update = true;
+//	int i = 0;
+//	while (!viewer->wasStopped ())
+//	{
+//		viewer->spinOnce (100);
+//		boost::mutex::scoped_lock updateBuiltLock(updateModelMutex);
+//
+//		if(update)
+//		{
+//			if (!viewer->updatePointCloud<pcl::PointXYZRGB>(ok, rgbColored, "result")) 
+//			{
+//				viewer->addPointCloud<pcl::PointXYZRGB> (ok, rgbColored, "result");
+//				viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "result");
+//			}
+//			std::stringstream tmp;
+//			tmp << i;
+//			//viewer->resetCamera();
+//			viewer->resetCameraViewpoint();
+//			//viewer->addLine(kinectPos, currentFrameCenter, 0, 0, 1, tmp.str());
+//			tmp << i;
+//			//viewer->removeShape("pose");
+//			viewer->removeText3D("kinect");
+//			//viewer->addSphere(kinectPos, 0.05, 1, 0, 0, tmp.str());
+//			//viewer->addText3D ("Kinect", kinectPos, 0.05, 0, 1, 0, "kinect");
+//
+//			update = false;
+//			i++;
+//		}
+//		updateBuiltLock.unlock();
+//	}   
+//    std::cout << "Worker: finished" << std::endl;
+//	return 0;
+//}
+//
+//int main1()
 //{
 //
 //	int times = 1;
-//	int final = 15;
+//	int final = 2;
 //	pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredA (new pcl::PointCloud<pcl::PointXYZRGB>);
 //	pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledA (new pcl::PointCloud<pcl::PointXYZRGB>);
 //	pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredB (new pcl::PointCloud<pcl::PointXYZRGB>);
