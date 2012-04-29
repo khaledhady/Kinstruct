@@ -28,8 +28,8 @@ using namespace pcl;
 int noFrames = 0;
 Alignment alignment;
 SurfaceConstruction surfaceConst;
-
 std::vector<cv::Mat *> keyframes;
+
 
 // Global cloud that will hold the reconstructed model
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr global (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -38,7 +38,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr global (new pcl::PointCloud<pcl::PointXYZ
 pcl::PointCloud<pcl::PointXYZ>::Ptr graph (new pcl::PointCloud<pcl::PointXYZ>);
 
 
-pcl::registration::ELCH<pcl::PointXYZRGB> elch;
+pcl::registration::ELCH<pcl::PointXYZRGB> *elch = new pcl::registration::ELCH<pcl::PointXYZRGB>();
 pcl::PointXYZ kinectPos(0, 0, 0);
 pcl::PointXYZ frameCenter(0, 0, 0);
 
@@ -78,55 +78,23 @@ bool capturedNew;
 bool stop;
 bool start;
 
-void hist(cv::Mat src)
+
+void initialize()
 {
-    cv::Mat hsv;
-    cv::cvtColor(src, hsv, CV_BGR2HSV);
-
-    // let's quantize the hue to 30 levels
-    // and the saturation to 32 levels
-    int hbins = 30, sbins = 32;
-    int histSize[] = {hbins, sbins};
-    // hue varies from 0 to 179, see cvtColor
-    float hranges[] = { 0, 180 };
-    // saturation varies from 0 (black-gray-white) to
-    // 255 (pure spectrum color)
-    float sranges[] = { 0, 256 };
-    const float* ranges[] = { hranges, sranges };
-    cv::MatND hist;
-    // we compute the histogram from the 0-th and 1-st channels
-    int channels[] = {0, 1};
-
-    cv::calcHist( &hsv, 1, channels, cv::Mat(), // do not use mask
-        hist, 2, histSize, ranges,
-        true, // the histogram is uniform
-        false );
-    double maxVal=0;
-    cv::minMaxLoc(hist, 0, &maxVal, 0, 0);
-
-    int scale = 10;
-    cv::Mat histImg = cv::Mat::zeros(sbins*scale, hbins*10, CV_8UC3);
-
-    for( int h = 0; h < hbins; h++ )
-        for( int s = 0; s < sbins; s++ )
-        {
-            float binVal = hist.at<float>(h, s);
-            int intensity = cvRound(binVal*255/maxVal);
-
-            cvRectangle( &histImg, cv::Point(h*scale, s*scale),
-                         cv::Point( (h+1)*scale - 1, (s+1)*scale - 1),
-                        cv:: Scalar::all(intensity),
-                         CV_FILLED );
-        }
-
-    cv::namedWindow( "Source", 1 );
-    cv::imshow( "Source", src );
-
-   cv::namedWindow( "H-S Histogram", 1 );
-    cv::imshow( "H-S Histogram", histImg );
-
-   cv::waitKey(30);
+	noFrames = 0;
+	stop = false;
+	start = false;
+	updateOnline = false;
+	updateBuilt = false;
+	optimizing = false;
+	globalTransformation = Eigen::Matrix4f::Identity ();
+	kinectPosTransformation = Eigen::Affine3f::Identity();	
+	global->clear();
+	graph->clear();
+	keyframes.clear();
+	elch = new pcl::registration::ELCH<pcl::PointXYZRGB>();
 }
+
 int checkLoop(int no)
 {
 		
@@ -173,7 +141,7 @@ int checkLoop(int no)
 		cout << keyframes.size() << "   ----- " << endl;
 		std::vector<cv::DMatch> matches;
 		std::vector<cv::KeyPoint> keypoints1, keypoints2;
-		cv::Mat fun = tracker.match(*keyframes.at(keyframes.size() -1),*keyframes.at(minIndex),
+		tracker.match(*keyframes.at(keyframes.size() -1),*keyframes.at(minIndex),
 		matches, keypoints1, keypoints2);
 		
 	cout << "index of match " << minIndex << endl;
@@ -235,11 +203,11 @@ void globalOptimization()
 {
 
 	cout << "started thread" << endl;
-	elch.compute();
+	elch->compute();
 	cout << "Computed" << endl;
 	boost::mutex::scoped_lock updateLock(updateModelMutex);
 	global->clear();
-	pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraphPtr mygraph = elch.getLoopGraph();
+	pcl::registration::ELCH<pcl::PointXYZRGB>::LoopGraphPtr mygraph = elch->getLoopGraph();
 	for (size_t i = 0; i < num_vertices (*mygraph); i++)
 	{
    
@@ -284,8 +252,8 @@ void alignFrames()
 	alignment.cloudToMat(cloudA, &imgA, &depthA);
 	keyframes.push_back(new cv::Mat(imgA));
 	graph->points.push_back(kinectPos);
-	elch.addPointCloud(coloredA);
-	elch.addPointCloud(coloredA);
+	elch->addPointCloud(coloredA);
+	elch->addPointCloud(coloredA);
 	 
 	 
 	//pcl::io::savePCDFileBinary("0.pcd", *cloudA);
@@ -356,7 +324,7 @@ void alignFrames()
 			updateBuilt = true;
 			globalTransformation = globalTransformation * icp.getFinalTransformation();
 			pcl::transformPointCloud(*coloredB, *transformed, globalTransformation);
-			elch.addPointCloud(transformed);
+			elch->addPointCloud(transformed);
 			Eigen::Matrix3f rot;
 			Eigen::Vector3f trans;
 			pcl::PointXYZ origin(0, 0, 0);
@@ -375,9 +343,9 @@ void alignFrames()
 			if(loopStart != -1)
 			{
 				framesBeforeCheck = 20;
-				elch.setLoopStart(loopStart + 1);
+				elch->setLoopStart(loopStart + 1);
 				
-				elch.setLoopEnd(no);
+				elch->setLoopEnd(no);
 				cout << "Optimizing" << endl;
 				boost::thread optimization(globalOptimization);
 				//globalOptimization();
@@ -408,7 +376,9 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 
 	if (event.getKeySym () == "r" && event.keyDown ())
 	{
+		
 		boost::mutex::scoped_lock startLock(updateOnlineMutex);
+		initialize();
 		std::cout << "r was pressed => starting construction " << std::endl;
 		PointCloud<pcl::PointXYZRGB>::Ptr deep_copy (new PointCloud<pcl::PointXYZRGB>( *onlineView ) );
 		if(noFrames == 0)
@@ -417,6 +387,7 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 			boost::thread workerThread(alignFrames);
 			cout << "Started recording --> " << endl;
 			start = true;
+			stop = false;
 		}
 		noFrames++;
 		startLock.unlock();
@@ -424,6 +395,7 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 	}else if (event.getKeySym () == "p" && event.keyDown ())
 	{
 		stop = true;
+		start = false;
 		//surfaceConst.fastTranguilation(global);
 		condQ.notify_one();
 		
@@ -490,12 +462,15 @@ public:
 
 void visualize()  
 {  
+	string currentMsg = "Press r to start scanning, when you are done press p";
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("Kinstruct"));
 	viewer->setBackgroundColor (0, 0, 0);
+	pcl::PointXYZ msgPos(-3, 0, 0);
 	viewer->registerKeyboardCallback(keyboardEventOccurred);
-
+	
 	viewer->setBackgroundColor (0.3, 0.3, 0.3);
 	viewer->addText("Result in RGB", 10, 10, "text");
+	viewer->addText3D(currentMsg, msgPos, 0.05, 1, 1, 1, "currentMsg");
 	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgbColored(global);
 
 	
@@ -512,9 +487,21 @@ void visualize()
 	{
 		viewer->spinOnce (100);
 		boost::mutex::scoped_lock updateBuiltLock(updateModelMutex);
-
+		cout << stop << endl;
+		if(start)
+		{
+			viewer->removeText3D("currentMsg");
+			viewer->removeShape("pose");
+		}
+		else if(stop)
+		{
+			currentMsg = "Press r to restart or m to segment";
+			viewer->addText3D(currentMsg, msgPos, 0.05, 1, 1, 1, "currentMsg");
+		}
+		
 		if(updateBuilt)
 		{
+			
 			if (!viewer->updatePointCloud<pcl::PointXYZRGB>(global, rgbColored, "result")) 
 			{
 				viewer->addPointCloud<pcl::PointXYZRGB> (global, rgbColored, "result");
@@ -526,7 +513,8 @@ void visualize()
 			tmp << i;
 			//viewer->removeShape("pose");
 			viewer->removeText3D("kinect");
-			viewer->addSphere(kinectPos, 0.05, 1, 0, 0, tmp.str());
+			
+			viewer->addSphere(kinectPos, 0.05, 1, 0, 0, "pose");
 			viewer->addText3D ("Kinect", kinectPos, 0.05, 0, 1, 0, "kinect");
 
 			updateBuilt = false;
