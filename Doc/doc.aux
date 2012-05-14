@@ -1,12 +1,66 @@
 \relax 
-\@writefile{toc}{\contentsline {chapter}{\numberline {1}Introduction}{3}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {1}Introduction}{4}}
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {1.1}Overview}{3}}
-\@writefile{toc}{\contentsline {section}{\numberline {1.2}History}{3}}
-\@writefile{toc}{\contentsline {section}{\numberline {1.3}Organization of this Book}{4}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.1}Overview}{4}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.2}History}{4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.1}{\ignorespaces Using Laser Scanners}}{5}}
+\newlabel{fig:intro}{{1.1}{5}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.2}{\ignorespaces Structure From Motion}}{5}}
+\newlabel{fig:SFM}{{1.2}{5}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.3}Organization of this Book}{5}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {2}Background}{7}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {2.1}Motivation}{7}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.2}Applications}{8}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.3}Previous work}{8}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces The pinhole camera model}}{10}}
+\newlabel{fig:pinhole}{{2.1}{10}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces Epipolar Geometry}}{12}}
+\newlabel{fig:epipolar}{{2.2}{12}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.3}{\ignorespaces A flowchart of mappings from the Voxel Volume to Image Pixels}}{13}}
+\newlabel{fig:flow_chart_voxel}{{2.3}{13}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.4}{\ignorespaces Projective volume projection for one of the image in the 'Head and Lamp' sequence}}{14}}
+\newlabel{fig:projective_volume}{{2.4}{14}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.4}Similar Projects}{15}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.5}What is different with our project?}{15}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {3}System Analysis and Design}{16}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}System Requirements}{16}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}Main pipeline and architecture}{17}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}Frame Acquisition}{17}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.2}Feature Tracking}{17}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.3}Transformation Calculation}{17}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.4}Concatenation and Presenting Results}{17}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.5}Loop Closure and Global Optimization}{18}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.1}{\ignorespaces System Pipeline}}{20}}
+\newlabel{fig:system_pipeline}{{3.1}{20}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}System components}{21}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces Class Diagram}}{22}}
+\newlabel{fig:class_diagram}{{3.2}{22}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.1}Libraries and tools}{22}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}Camera Transformation Calculation}{23}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}Introduction}{23}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}Horn's method}{23}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces One coordinate system transformed to the other}}{24}}
+\newlabel{fig:transformation_AB}{{4.1}{24}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}Quaternions}{24}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces i,j and k composition rule}}{24}}
+\newlabel{tab:ijkcomposition}{{4.1}{24}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.2}{\ignorespaces Gimbal lock happens when two rotation axes are in the same plane}}{26}}
+\newlabel{fig:gimbal_lock}{{4.2}{26}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}Quaternions as rotational operators}{27}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.3}Closed Form Registration}{27}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces Maixmizing the sum $ \DOTSB \sum@ \slimits@ {i=1}^{n} p'_{r,i} \cdot Rp'_{l,i} $ is equivalent to maximizing $ \DOTSB \sum@ \slimits@ {i=1}^{n} | p'_{r,i} | |Rp'_{l,i}| \qopname  \relax o{cos}\theta $. This sum is maximized when $\qopname  \relax o{cos}\theta = 1$, $\theta =0$. Gemoetrically we compute the rotation which minimizes the angle between the two vectors}}{29}}
+\newlabel{fig:gemoetric_int}{{4.3}{29}}
 \bibstyle{plain}
 \bibdata{Doc}
-\@writefile{toc}{\contentsline {chapter}{\numberline {2}Background}{6}}
-\@writefile{lof}{\addvspace {10\p@ }}
-\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.4}Results of Horn's method}{31}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.4}{\ignorespaces We notice that most features are concentrated in the parts that contains chairs while the wall on the right has no features matched}}{31}}
+\newlabel{fig:matches_chairs}{{4.4}{31}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.5}{\ignorespaces Areas marked with yellow show how alignment fails in featureless areas}}{32}}
+\newlabel{fig:chairs_horn}{{4.5}{32}}

@@ -15,7 +15,23 @@ a user to build 3D models of an indoor environment using a hand-held Kinect.
 
 Anyway the introduction of laser scanners has provided more accurate information about the nature of scenes and objects especially surfaces with complex structure, the complexity of laser scanners and their high cost that can be up to tens of thousands of dollars make them only suitable for professionals.
 
-Between the ordinary 2D camers and the expensive laser scanners, new cheap cameras (costs only hundreds of dollars) named RGB-D cameras have emerged in the market starting from 2009 such as the Kinect camera that was named initialy Project Natal, and although the Kinect was targeting the gaming industry, a wave of hacks exploiting the capabilities of Kinect in different fields such as 3D reconstruction.
+Between the ordinary 2D camers and the expensive laser scanners, new cheap cameras (costs only hundreds of dollars) named RGB-D cameras have emerged in the market starting from 2009 such as the Kinect camera that was named initialy Project Natal, and although the Kinect was targeting the gaming industry, a wave of hacks exploiting the capabilities of Kinect in different fields such as 3D reconstruction has proved that despite the low sepecifications of the device it still can be used to produce results are useful for many users.
+
+\begin{figure}[ht]
+\begin{minipage}[b]{0.5\linewidth}
+\centering
+\includegraphics[scale=2.5,keepaspectratio=true]{chap1/intro.png}
+\caption{Using Laser Scanners}
+\label{fig:intro}
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}[b]{0.5\linewidth}
+\centering
+\includegraphics[scale=0.5,keepaspectratio=true]{chap1/SFM.jpg}
+\caption{Structure From Motion}
+\label{fig:SFM}
+\end{minipage}
+\end{figure}
 
 \section{Organization of this Book}
 
@@ -35,7 +51,7 @@ Chapter 3: System Analysis and Design - explains the top level analysis of the s
 Chapter 4: Using Kinect - explains our choice of Kinect as the scanning camera and details its sepecifications and history
 
 \hbox{}
-Chapter 5: Feature Extraction and Matching - compares two different we used to track features from consecutive frames
+Chapter 5: Feature Extraction and Matching - compares two different methods that we used to track features from consecutive frames
 
 \hbox{}
 Chapter 6: Camera Tranformation Calculation - explains the methods used to calculate a transformation between the correspondences obtained from feature matching

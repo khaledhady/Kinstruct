@@ -1,0 +1,39 @@
+%********** Chapter 4 **********
+\chapter{Image Features}
+\usepackage{enumitem}
+\section{Introduction}
+
+In computer vision and image processing the concept of feature detection refers to methods that aim at computing abstractions of image information and making local decisions at every image point whether there is an image feature of a given type at that point or not. The resulting features will be subsets of the image domain, often in the form of isolated points, continuous curves or connected regions.
+
+The importance of Feature Detection in our project is that building and constructing the 3D Model of our view is based initially on feature detection in successive frames that belong to the same scene or the same model. This is because using features detected in two successive frames, we can get a reasonable matching between the features detected in both of them and this will help us to calculate the most accurate transformation between them, and as a result we can transform one of the frames to be represented with the coordinates of the other model or the global model in order to represent the whole model as one 3D model for the scanned scene.
+
+So, in this chapter we will discuss in the upcoming sections the definition of features and what makes a feature in the image, also we will talk about types of this features and what characteristics should sufficiently exist in the detected features in order to help in the process of feature matching and calculation of transformations to get best alignment between successive frames in the global model.
+
+Also, we will explain how features are detected and we will include talking about most famous feature detectors. Then we will talk about some important problems with feature detection and matching that can affect the process of alignment of successive frames negatively , this problems are scale invariant of features and illumination invariant features also rotation invariant features. Another important feature tracker is the Optical flow feature detector, this detector will be explained later and it's important in matching features of very near successive image frames that can be obtained from any video source like KINECT or any other camera.
+
+
+\section{What does Feature mean ?}
+There is no universal or exact definition of what constitutes a feature, and the exact definition often depends on the problem or the type of application. Given that, a feature is defined as an "interesting" part of an image, and features are used as a starting point for many computer vision algorithms. Since features are used as the starting point and main primitives for subsequent algorithms, the overall algorithm will often only be as good as its feature detector. Consequently, the desirable property for a feature detector is repeatability: whether or not the same feature will be detected in two or more different images of the same scene.
+
+Feature detection is a low-level image processing operation. That is, it is usually performed as the first operation on an image, and examines every pixel to see if there is a feature present at that pixel. If this is part of a larger algorithm, then the algorithm will typically only examine the image in the region of the features. As a built-in pre-requisite to feature detection, the input image is usually smoothed by a Gaussian kernel in a scale-space representation and one or several feature images are computed, often expressed in terms of local derivative operations.
+
+The step of application of Gaussian kernel is to smooth and remove noisy features that are not important for our application and that may affect the transformation calculation negatively. So, this step will guarantee that the detected features after that are accurate and of interest.
+
+Occasionally, when feature detection is computationally expensive and there are time constraints, a higher level algorithm may be used to guide the feature detection stage, so that only certain parts of the image are searched for features.
+Many computer vision algorithms use feature detection as the initial step, so as a result, a very large number of feature detectors have been developed. These vary widely in the kinds of feature detected, the computational complexity and the repeatability. 
+
+
+\section{Types and characteristics of features}
+
+At an overview level, these feature detectors can (with some overlap) be divided into the following groups:
+\begin{enumerate}
+	\item Edges
+	\item Corners / interest points
+	\item Blobs / regions of interest or interest points
+	\item Ridges
+\end{enumerate}
+
+\section{Features detectors}
+\section{Scale-invariant feature transform}
+\section{Optical Flow Feature Detector}
+\section{Feature Matching Techniques}

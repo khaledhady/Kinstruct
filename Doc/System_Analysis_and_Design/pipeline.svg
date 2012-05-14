@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="39cm" height="62cm" viewBox="209 -46 769 1239" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="421.35" y="30" width="167.3" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="421.35" y="30" width="167.3" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="505" y="53.8">
+      <tspan x="505" y="53.8">Store input as point cloud</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="371.674" y="114" width="268.65" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="371.674" y="114" width="268.65" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="505.999" y="137.8">
+      <tspan x="505.999" y="137.8">Convert to separate RGB and Depth images</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="283.85" y="422" width="444.3" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="283.85" y="422" width="444.3" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="506" y="445.8">
+      <tspan x="506" y="445.8">Calculate transformation between correspondances</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="352.024" y="191" width="303.95" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="352.024" y="191" width="303.95" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="503.999" y="214.8">
+      <tspan x="503.999" y="214.8">Track features of previous frame in second frame</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="268.65" y="607" width="468.7" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="268.65" y="607" width="468.7" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="503" y="630.8">
+      <tspan x="503" y="630.8">Apply the global transformation to the second point cloud</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="505" y1="68" x2="505.542" y2="103.262"/>
+    <polygon style="fill: #000000" points="505.657,110.761 500.504,100.839 505.542,103.262 510.503,100.685 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="505.657,110.761 500.504,100.839 505.542,103.262 510.503,100.685 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="505.998" y1="152" x2="505.024" y2="180.268"/>
+    <polygon style="fill: #000000" points="504.765,187.764 500.113,177.598 505.024,180.268 510.107,177.942 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="504.765,187.764 500.113,177.598 505.024,180.268 510.107,177.942 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="504.203" y1="230" x2="504.4" y2="249.304"/>
+    <polygon style="fill: #000000" points="504.477,256.803 499.375,246.855 504.4,249.304 509.374,246.753 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="504.477,256.803 499.375,246.855 504.4,249.304 509.374,246.753 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="506" y1="460" x2="504.274" y2="500.269"/>
+    <polygon style="fill: #000000" points="503.952,507.762 499.385,497.557 504.274,500.269 509.376,497.986 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="503.952,507.762 499.385,497.557 504.274,500.269 509.376,497.986 "/>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="432.793,-45 603.766,-45 589.208,-5 418.234,-5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="432.793,-45 603.766,-45 589.208,-5 418.234,-5 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="511" y="-20.2">
+      <tspan x="511" y="-20.2">Obtain frame from Kinect</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="503.72" y1="-5" x2="504.295" y2="19.2672"/>
+    <polygon style="fill: #000000" points="504.473,26.765 499.237,16.8863 504.295,19.2672 509.235,16.6494 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="504.473,26.765 499.237,16.8863 504.295,19.2672 509.235,16.6494 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="294.724" y="511" width="416.55" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="294.724" y="511" width="416.55" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="502.999" y="534.8">
+      <tspan x="502.999" y="534.8">Concatenate the obtained transformation to the global transofrmation</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="503" y1="549" x2="503" y2="596.337"/>
+    <polygon style="fill: #000000" points="503,603.837 498,593.837 503,596.337 508,593.837 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="503,603.837 498,593.837 503,596.337 508,593.837 "/>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="505.15,259.75 646.001,322.798 505.15,385.846 364.3,322.798 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="505.15,259.75 646.001,322.798 505.15,385.846 364.3,322.798 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="505.15" y="327.598">
+      <tspan x="505.15" y="327.598">Successfully tracked &gt; threshold</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="505.15" y1="385.846" x2="505.542" y2="411.269"/>
+    <polygon style="fill: #000000" points="505.657,418.768 500.504,408.846 505.542,411.269 510.503,408.692 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="505.657,418.768 500.504,408.846 505.542,411.269 510.503,408.692 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="462" y="404.5">
+    <tspan x="462" y="404.5">No</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="210.874" y="303.5" width="96.25" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="210.874" y="303.5" width="96.25" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="258.999" y="327.3">
+      <tspan x="258.999" y="327.3">Ignore frame</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="364.3" y1="322.798" x2="317.851" y2="322.667"/>
+    <polygon style="fill: #000000" points="310.351,322.645 320.365,317.674 317.851,322.667 320.336,327.674 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="310.351,322.645 320.365,317.674 317.851,322.667 320.336,327.674 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="337" y="347.5">
+    <tspan x="337" y="347.5">Yes</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="395.5" y="681" width="211" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="395.5" y="681" width="211" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="501" y="704.8">
+      <tspan x="501" y="704.8">Calculate current camera position</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="503" y1="645" x2="502.081" y2="670.276"/>
+    <polygon style="fill: #000000" points="501.808,677.772 497.175,667.596 502.081,670.276 507.168,667.96 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="501.808,677.772 497.175,667.596 502.081,670.276 507.168,667.96 "/>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="500.572,763.63 607.621,828.737 500.572,893.845 393.524,828.737 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="500.572,763.63 607.621,828.737 500.572,893.845 393.524,828.737 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="500.572" y="825.537">
+      <tspan x="500.572" y="825.537">Is position near</tspan>
+      <tspan x="500.572" y="841.537">any previous frame ?</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="501" y1="719" x2="500.867" y2="753.068"/>
+    <polygon style="fill: #000000" points="500.838,760.568 495.877,750.548 500.867,753.068 505.877,750.587 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="500.838,760.568 495.877,750.548 500.867,753.068 505.877,750.587 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="374" y="803.75">
+    <tspan x="374" y="803.75">No</tspan>
+  </text>
+  <g>
+    <polygon style="fill: #ffffff" points="502.244,938.5 631.406,1003.69 502.244,1068.88 373.082,1003.69 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="502.244,938.5 631.406,1003.69 502.244,1068.88 373.082,1003.69 "/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="502.244" y="1000.49">
+      <tspan x="502.244" y="1000.49">Is second frame similar to</tspan>
+      <tspan x="502.244" y="1016.49">near previous frame ?</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="500.572" y1="893.844" x2="501.096" y2="928.279"/>
+    <polygon style="fill: #000000" points="501.21,935.778 496.059,925.855 501.096,928.279 506.058,925.703 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="501.21,935.778 496.059,925.855 501.096,928.279 506.058,925.703 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="460" y="921">
+    <tspan x="460" y="921">Yes</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="688.876" y="983.25" width="288.25" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="688.876" y="983.25" width="288.25" height="38"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="833.001" y="1007.05">
+      <tspan x="833.001" y="1007.05">Loop closure detected, apply global optimiztion</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="631.406" y1="1003.69" x2="678.147" y2="1003.36"/>
+    <polygon style="fill: #000000" points="685.647,1003.3 675.683,1008.38 678.147,1003.36 675.612,998.376 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="685.647,1003.3 675.683,1008.38 678.147,1003.36 675.612,998.376 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="640" y="985.25">
+    <tspan x="640" y="985.25">Yes</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="353.7" y="1121.25" width="288.3" height="70"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="353.7" y="1121.25" width="288.3" height="70"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="497.85" y="1145.05">
+      <tspan x="497.85" y="1145.05">Update global point cloud</tspan>
+      <tspan x="497.85" y="1161.05">with the transformed second</tspan>
+      <tspan x="497.85" y="1177.05">point cloud</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="502.244" y1="1068.88" x2="500.146" y2="1110.61"/>
+    <polygon style="fill: #000000" points="499.769,1118.1 495.277,1107.86 500.146,1110.61 505.265,1108.36 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="499.769,1118.1 495.277,1107.86 500.146,1110.61 505.265,1108.36 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="469" y="1090.25">
+    <tspan x="469" y="1090.25">No</tspan>
+  </text>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="833.001,1021.25 833.001,1156.25 651.736,1156.25 "/>
+    <polygon style="fill: #000000" points="644.236,1156.25 654.236,1151.25 651.736,1156.25 654.236,1161.25 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="644.236,1156.25 654.236,1151.25 651.736,1156.25 654.236,1161.25 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="393.524,828.738 393.524,828.25 353.7,828.25 353.7,1111.51 "/>
+    <polygon style="fill: #000000" points="353.7,1119.01 348.7,1109.01 353.7,1111.51 358.7,1109.01 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="353.7,1119.01 348.7,1109.01 353.7,1111.51 358.7,1109.01 "/>
+  </g>
+</svg>

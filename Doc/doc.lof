@@ -1,0 +1,17 @@
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Using Laser Scanners}}{5}
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Structure From Motion}}{5}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces The pinhole camera model}}{10}
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Epipolar Geometry}}{12}
+\contentsline {figure}{\numberline {2.3}{\ignorespaces A flowchart of mappings from the Voxel Volume to Image Pixels}}{13}
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Projective volume projection for one of the image in the 'Head and Lamp' sequence}}{14}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces System Pipeline}}{20}
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Class Diagram}}{22}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces One coordinate system transformed to the other}}{24}
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Gimbal lock happens when two rotation axes are in the same plane}}{26}
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Maixmizing the sum $ \DOTSB \sum@ \slimits@ {i=1}^{n} p'_{r,i} \cdot Rp'_{l,i} $ is equivalent to maximizing $ \DOTSB \sum@ \slimits@ {i=1}^{n} | p'_{r,i} | |Rp'_{l,i}| \qopname \relax o{cos}\theta $. This sum is maximized when $\qopname \relax o{cos}\theta = 1$, $\theta =0$. Gemoetrically we compute the rotation which minimizes the angle between the two vectors}}{29}
+\contentsline {figure}{\numberline {4.4}{\ignorespaces We notice that most features are concentrated in the parts that contains chairs while the wall on the right has no features matched}}{31}
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Areas marked with yellow show how alignment fails in featureless areas}}{32}
