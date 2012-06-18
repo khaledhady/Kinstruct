@@ -74,63 +74,43 @@ void SurfaceConstruction::refineSurface(pcl::PointCloud<pcl::PointXYZRGB>::Ptr c
   
 }
 
-template<typename T>
-class PCLMarchingCubesGreedyWrapper : public pcl::MarchingCubesGreedy<T>
-{ 
-        public: 
-                PCLMarchingCubesGreedyWrapper() {}; 
-                virtual ~PCLMarchingCubesGreedyWrapper() {}; 
 
-        protected: 
-                virtual void performReconstruction(pcl::PointCloud<T    >&, std::vector<pcl::Vertices>&) 
-                { 
-                        std::cout << "IS THIS EVER USED?" << std::endl; 
-                } 
-}; 
 
-//typedef pcl::PointXYZ PointType; 
-typedef pcl::PointXYZRGB PointType; 
-typedef pcl::Normal Normals;	
-//typedef pcl::PointNormal PointTypeNormal; 
-typedef pcl::PointXYZRGBNormal PointTypeNormal; 
-
-void SurfaceConstruction::fastTranguilation(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
+void SurfaceConstruction::marchingCubes(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
 {
-	double leafSize = 0.05; 
-        float isoLevel = 0.5; 
+	double leafSize = 0.01; 
+    float isoLevel = 0.5; 
 
-        // Load input file */ 
+    // Load input file */ 
         
-        pcl::PointCloud<PointTypeNormal>::Ptr pointcloudNormal (new pcl::PointCloud<PointTypeNormal> ()); 
+    pcl::PointCloud<PointTypeNormal>::Ptr pointcloudNormal (new pcl::PointCloud<PointTypeNormal> ()); 
 
-        /* Marching Cubes Reconstruction */ 
-        pcl::PolygonMesh mesh; 
+    /* Marching Cubes Reconstruction */ 
+    pcl::PolygonMesh mesh; 
 
-        // Normal estimation* 
-        pcl::NormalEstimation<PointType, PointTypeNormal> norm_est; 
-        pcl::PointCloud<Normals>::Ptr normals (new pcl::PointCloud<Normals>); 
-        pcl::search::KdTree<PointType>::Ptr tree (new pcl::search::KdTree<PointType>); 
-        tree->setInputCloud (cloud); 
-        norm_est.setInputCloud (cloud); 
-        norm_est.setSearchMethod (tree); 
-        norm_est.setKSearch(30); 
-        norm_est.compute(*pointcloudNormal); 
-        pcl::copyPointCloud (*cloud, *pointcloudNormal); 
+    // Normal estimation* 
+    pcl::NormalEstimation<PointType, PointTypeNormal> norm_est; 
+    pcl::PointCloud<Normals>::Ptr normals (new pcl::PointCloud<Normals>); 
+    pcl::search::KdTree<PointType>::Ptr tree (new pcl::search::KdTree<PointType>); 
+    tree->setInputCloud (cloud); 
+    norm_est.setInputCloud (cloud); 
+    norm_est.setSearchMethod (tree); 
+    norm_est.setKSearch(30); 
+    norm_est.compute(*pointcloudNormal); 
+    pcl::copyPointCloud (*cloud, *pointcloudNormal); 
 
-        // Create the search method 
-        pcl::search::KdTree<PointTypeNormal>::Ptr tree2 (new pcl::search::KdTree<PointTypeNormal>); 
-        tree2->setInputCloud (pointcloudNormal); 
-        // Initialize objects 
-        PCLMarchingCubesGreedyWrapper<PointTypeNormal> mc; 
-        // Set parameters 
-        mc.setLeafSize(leafSize);   
-        mc.setIsoLevel(isoLevel);   //ISO: must be between 0 and 1.0 
-        mc.setSearchMethod(tree2); 
-        mc.setInputCloud(pointcloudNormal); 
-        // Reconstruct 
-        mc.reconstruct (mesh); 
+    // Create the search method 
+    pcl::search::KdTree<PointTypeNormal>::Ptr tree2 (new pcl::search::KdTree<PointTypeNormal>); 
+    tree2->setInputCloud (pointcloudNormal); 
+    // Initialize objects 
+    PCLMarchingCubesGreedyWrapper<PointTypeNormal> mc; 
+    // Set parameters 
+    mc.setLeafSize(leafSize);   
+    mc.setIsoLevel(isoLevel);   //ISO: must be between 0 and 1.0 
+    mc.setSearchMethod(tree2); 
+    mc.setInputCloud(pointcloudNormal); 
+    // Reconstruct 
+    mc.reconstruct (mesh); 
 
-        //Saving to disk in VTK format: 
-        pcl::io::saveVTKFile ("nice.vtk", mesh); 
-        pcl::io::savePLYFile ("nice.ply", mesh); 
+    pcl::io::savePLYFile ("model.ply", mesh); 
 }

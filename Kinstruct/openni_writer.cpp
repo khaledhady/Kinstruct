@@ -26,6 +26,12 @@
 using namespace std;
 using namespace pcl;
 int noFrames = 0;
+int loopThreshold = 0;
+bool changeMsg = false;
+string resolution;
+string trackingMethod;
+int trackingThreshold;
+string state;
 Alignment alignment;
 SurfaceConstruction surfaceConst;
 std::vector<cv::Mat *> keyframes;
@@ -78,6 +84,9 @@ bool capturedNew;
 bool stop;
 bool start;
 
+ofstream myfile;
+
+  
 
 void initialize()
 {
@@ -110,7 +119,7 @@ int checkLoop(int no)
   std::vector<int> pointIdxNKNSearch(K);
   std::vector<float> pointNKNSquaredDistance(K);
 
-  //std::cout << "Frame number = " << no << endl;
+  std::cout << "Frame number = " << no << endl;
 
   if ( kdtree.radiusSearch(kinectPos, 0.15, pointIdxNKNSearch, pointNKNSquaredDistance, 5) > 0 )
   {
@@ -118,7 +127,7 @@ int checkLoop(int no)
 	  double minIndex = -1;
     for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
 	{
-		if(pointIdxNKNSearch[i] < no - 10 && pointNKNSquaredDistance[i] <= min)
+		if(pointIdxNKNSearch[i] < no - loopThreshold && pointNKNSquaredDistance[i] <= min)
 		{
 			min = pointNKNSquaredDistance[0];
 			minIndex = pointIdxNKNSearch[i];
@@ -169,34 +178,6 @@ int checkLoop(int no)
 	return minIndex;
   }
 	return -1;
-}
-
-void setFrameCenter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointXYZ &frameCenter)
-{
-	int avgX = 0; int avgY = 0; int avgZ = 0; 
-	for(int i = 0; i < cloud->points.size(); i++)
-	{
-	
-			pcl::PointXYZRGB point = cloud->points[i];
-
-			// Ignore any unidentified point
-			if (isFinite (point))
-			{
-				//cout << "x of point " << point.x;
-				avgX += point.x;
-				avgY += point.y;
-				avgZ += point.z;
-			}
-	
-	}
-	avgX = avgX / cloud->points.size();
-	avgY = avgY / cloud->points.size();
-	avgZ = avgZ / cloud->points.size();
-	
-	frameCenter.x = avgX;
-	cout << "initial x" << frameCenter.x;
-	frameCenter.y = avgY;
-	frameCenter.z = avgZ;
 }
 
 void globalOptimization()
@@ -259,8 +240,9 @@ void alignFrames()
 	//pcl::io::savePCDFileBinary("0.pcd", *cloudA);
 	 
 	int no = 1;
-	int framesBeforeCheck = 20;
+	int framesBeforeCheck = loopThreshold;
 	long totalTime = 0;
+	myfile.open ("results.txt");
 	while(!stop)
 	{
 		boost::mutex::scoped_lock updateCloudBLock(updateCloudBMutex);
@@ -287,12 +269,15 @@ void alignFrames()
 		time_t beforeTracking;
 		beforeTracking = time (NULL);
 		
+		bool align = false;
 		// use the two obtained frames to get the initial tansformations
-		bool align  = alignment.getInitialTransformation(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB);
+		if(trackingMethod.compare("FLOW") == 0)
+			align  = alignment.getInitialTransformation(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB, trackingThreshold);
+		else align  = alignment.getInitialTransformationSURF(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB, trackingThreshold);
 		//bool align  = alignment.getInitialTransformationSURF(&imgA, &imgB, &depthA, &depthB, &inverse, cloudA, cloudB);
 		time_t afterTracking = time (NULL);
-		totalTime += afterTracking - beforeTracking;
-		//cout << "Found initial " << afterTracking - beforeTracking << endl;
+		
+		
 		// align is false if the two point clouds are same, so just continue and discard cloudB
 		// align can also be false if the two points clouds are far so tracking has failed, in that
 		// case discard the frame and wait till the user gets back to a frame that can be tracked
@@ -319,7 +304,11 @@ void alignFrames()
 			pcl::copyPointCloud(*downsampledB, *lastAligned);
 			//std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
 			totalTime += after - before;
-			//cout << "Found Transformation " << after - before << endl;
+			myfile << "Found Transformation " << after - before << endl;
+			myfile << "Found initial " << afterTracking - beforeTracking << endl;
+			/*cout << "Found Transformation " << after - before << endl;
+			cout << "Found initial " << afterTracking - beforeTracking << endl;*/
+			totalTime += afterTracking - beforeTracking;
 			boost::mutex::scoped_lock updateLock(updateModelMutex);
 			updateBuilt = true;
 			globalTransformation = globalTransformation * icp.getFinalTransformation();
@@ -342,7 +331,7 @@ void alignFrames()
 			   loopStart = checkLoop(no);
 			if(loopStart != -1)
 			{
-				framesBeforeCheck = 20;
+				framesBeforeCheck = loopThreshold;
 				elch->setLoopStart(loopStart + 1);
 				
 				elch->setLoopEnd(no);
@@ -366,9 +355,11 @@ void alignFrames()
 		
 		
 	}
-	pcl::io::savePCDFileBinary("helal.pcd", *global);
-	cout << "Total time " << totalTime << endl;
-	
+	cv::destroyWindow("Current keyframe");
+	cv::destroyWindow("Online");
+	//pcl::io::savePCDFileBinary("helal.pcd", *global);
+	myfile << "Total time " << totalTime << endl;
+	myfile.close();
 }
 
 void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void* viewer_void)
@@ -376,7 +367,8 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 
 	if (event.getKeySym () == "r" && event.keyDown ())
 	{
-		
+		state = "record";
+		changeMsg = true;
 		boost::mutex::scoped_lock startLock(updateOnlineMutex);
 		initialize();
 		std::cout << "r was pressed => starting construction " << std::endl;
@@ -396,8 +388,11 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 	{
 		stop = true;
 		start = false;
+		state = "pause";
+		changeMsg = true;
 		//surfaceConst.fastTranguilation(global);
 		condQ.notify_one();
+		
 		
 	}else if(event.getKeySym() == "a" && event.keyDown())
 	{
@@ -409,7 +404,11 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event, void
 		pcl::io::savePCDFileBinary(tmp.str() , *deep_copy);
 		noFrames++;
 		saveLock.unlock();
+	}else if(event.getKeySym() == "h" && event.keyDown() && stop)
+	{
+		surfaceConst.marchingCubes(global);
 	}
+
 }
 
 
@@ -443,8 +442,10 @@ public:
 
 	void run ()
 	{
-		pcl::Grabber* x = new pcl::OpenNIGrabber("", pcl::OpenNIGrabber::OpenNI_QVGA_30Hz, pcl::OpenNIGrabber::OpenNI_QVGA_30Hz);
-		//pcl::Grabber* x = new pcl::OpenNIGrabber();
+		pcl::Grabber* x;
+		if(resolution.compare("QVGA") == 0)
+			x = new pcl::OpenNIGrabber("", pcl::OpenNIGrabber::OpenNI_QVGA_30Hz, pcl::OpenNIGrabber::OpenNI_QVGA_30Hz);
+		else x = new pcl::OpenNIGrabber();
 
 		boost::function<void (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr&)> f =
 		boost::bind (&SimpleOpenNIViewer::cloud_cb_, this, _1);
@@ -487,16 +488,17 @@ void visualize()
 	{
 		viewer->spinOnce (100);
 		boost::mutex::scoped_lock updateBuiltLock(updateModelMutex);
-		cout << stop << endl;
-		if(start)
+		if(state.compare("record") == 0 && changeMsg)
 		{
 			viewer->removeText3D("currentMsg");
-			viewer->removeShape("pose");
+			//viewer->removeShape("pose");
+			changeMsg = false;
 		}
-		else if(stop)
+		else if(state.compare("pause") ==0 && changeMsg)
 		{
 			currentMsg = "Press r to restart or m to segment";
 			viewer->addText3D(currentMsg, msgPos, 0.05, 1, 1, 1, "currentMsg");
+			changeMsg = false;
 		}
 		
 		if(updateBuilt)
@@ -511,7 +513,7 @@ void visualize()
 			tmp << i;
 			//viewer->resetCamera();
 			tmp << i;
-			//viewer->removeShape("pose");
+			viewer->removeShape("pose");
 			viewer->removeText3D("kinect");
 			
 			viewer->addSphere(kinectPos, 0.05, 1, 0, 0, "pose");
@@ -527,6 +529,24 @@ void visualize()
 
 int main ()
 {
+	ifstream myfile ("params.txt");
+	
+	if (myfile.is_open())
+	{
+		string trackingThr;
+		string loopThr;
+		getline (myfile,resolution);
+		getline (myfile,trackingThr);
+		getline (myfile,trackingMethod);
+		getline (myfile,loopThr);
+		trackingThreshold = atoi(trackingThr.c_str());
+		loopThreshold = atoi(loopThr.c_str());
+	    cout << resolution << endl;
+		cout << trackingThreshold << endl;
+		cout << trackingMethod << endl;
+		cout << loopThreshold << endl;
+    }
+    myfile.close();
 	boost::thread workerThread(visualize); 
 	SimpleOpenNIViewer v;
 	v.run ();

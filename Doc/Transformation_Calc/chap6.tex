@@ -263,7 +263,126 @@ this causes the transformation to be baised towards the chairs while neglecting 
 
 \begin{figure}[htb]
 \centering
-\includegraphics[scale=0.5, width =150mm,keepaspectratio=true]{Transformation_calc/chairs_horn.png}
+\includegraphics[height=100mm,width=150mm]{Transformation_calc/chairs_horn.png}
 \caption{Areas marked with yellow show how alignment fails in featureless areas}
 \label{fig:chairs_horn}
 \end{figure}
+
+As a result of the previous conclusion we used a different transformation estimation algorithm known as Iterative Closest Point (ICP), the following section explains how the algorithm works and the results we have reached.
+
+
+\section{Iterative Closes Point}
+
+\subsection{Definition}
+The Horn's method explained in the previous section was a closed form solution, here we explain ICP which is an iterative algorithm that works as follows:
+\begin{enumerate}
+\item Find closest neighbour to every point
+\item Compute transformation that minimizes the error over all pairs of points
+\item Apply transformation and update point cloud
+\item Go back to step 1 till stopping criteria is met
+\end{enumerate}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[scale=0.5,keepaspectratio=true]{Transformation_calc/icp.jpg}
+\caption{Iterative closest point used to align two point clouds}
+\label{fig:icp}
+\end{figure}
+
+\subsection{Motivation}
+ICP can be used to align two point clouds by iteratively computing the transformation that minimizes the sum of square errors, the problem is that ICP is suffers from:
+\begin{itemize}
+\item ICP may not converge so we need to set a stopping criteria.
+\item ICP may converge to a local minimum, meaning that we may get a transformation that is good but not the best one.
+\item ICP is extremely slow as it uses all the points of the point clouds, while Horn's method uses much less number of points, and can do with only three.
+\end{itemize}
+
+As stated in the previous chapter, the problem with the closed form solution is that it considers only feature points in transformation calculation, so we decided to use ICP as a second step after obtaining the closed form solution, and we use the obtained transformation as an initial guess to the ICP, this way the ICP step takes less time and converges better, we also consider downsampling the input point clouds to reduce the input size of the ICP making it more faster.
+
+\subsection{Downsampling}
+
+Downsampling is used to reduce the number of points in a point cloud without losing much details.
+
+We use voxel grids to downsample the input point clouds, voxel grids work by dividing the input cloud into small 3D boxes and then replacing every box with the average of all points inside it, the dimensions of the 3D boxes used determine the downsampling ratio, so if we use large boxes we get fewer points and vice versa.
+
+We use a voxel grid of size $(2.5)^3$ $cm^3$, this allows us to reduce the number of points processed in ICP while not losing much of the details of the scene.
+
+\begin{figure}[H]
+\centering
+\includegraphics{Transformation_Calc/notDownsampled.png}
+\caption{A QVGA scene of a bed without downsampling}
+\label{fig:downsample}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5,keepaspectratio=true]{Transformation_Calc/downsampled.png}
+\caption{A QVGA scene of a bed after downsampling}
+\label{fig:downsample}
+\end{figure}
+
+\pagebreak
+\subsection{Results of applying ICP}
+
+After using Horn's method transformation as an initial guess for the ICP procedure on the two downsampled point clouds we have obtained great results because the ICP takes all points in consideration.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=100mm,width=150mm]{Transformation_Calc/chairs_final.png}
+\caption{Applying ICP after using Horn's method result as an initial guess, the results are clearly better than the one obtained only with Horn's method in Figure ~\ref{fig:chairs_horn} }
+\label{fig:chairs_final}
+\end{figure}
+
+The previous figure clearly shows how the results have imporved as we see the two point clouds are well aligned with no gaps, and we notice that the problem that was happening for the wall has disappeared.
+
+
+\section{Results and performance}
+
+Our system needs is real-time systsm as it needs to provide the constructed 3D model while the user is scanning the environment, this constranis that the alignment takes no more than 2 seconds so that the user will feel no lag in the scanning process.
+
+The performance of the methods we have proposed before satisfy this time constraing as the whole alignment process starting from feature detection to that concatenation of aligned two point clouds takes a maximun of one second for two frames of QVGA resolution. The average time for the alignment is $0.1428$ seconds. [need to do samples and stuff]
+
+We provide here the results obtained from aligning 21 QVGA frames:
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6,keepaspectratio=true]{Transformation_Calc/QVGA1.png}
+
+\label{fig:resultsQVGA_1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=150mm]{Transformation_Calc/QVGA2.png}
+\caption{Constructed scene from two different viewpoints}
+\label{fig:resultsQVGA_2}
+\end{figure}
+
+More accurate results can be obtained by using VGA resolution instead of QVGA, this enhances every step in the alignment process, as the feature detection and tracking is richer, also the ICP operates on more points that describe the scene in more details.
+
+\pagebreak
+The difference can be clearly noticed in the two following images that show the alignment result of 14 VGA frames in 7 seconds.
+
+\begin{figure}[H]
+\centering
+\includegraphics{Transformation_Calc/VGA1.png}
+
+\label{fig:resultsVGA_1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics{Transformation_Calc/VGA2.png}
+\caption{Constructed scene from two different viewpoints}
+\label{fig:resultsVGA_2}
+\end{figure}
+
+
+
+
+
+
+
+
+

@@ -8,7 +8,7 @@ Alignment::Alignment()
 // to the second frame, then use Horn's method to find a rigid transformation between the 
 // first and the second, this transformation is then inversed.
 bool Alignment::getInitialTransformation(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *depthB, Transformation *inverse,
-				 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA, pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB)
+				 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA, pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB, int threshold)
 {
 	Tracker tracker;
 	//cout << "Tracking.. " << endl ;
@@ -27,17 +27,16 @@ bool Alignment::getInitialTransformation(cv::Mat *colorA, cv::Mat *colorB, cv::M
 
 	after = time (NULL);
 	//cout << "Finished Tracking " << after - before << endl;
-
-	cv::imshow( "Current keyframe " , imageA);
-	cvMoveWindow( "Current keyframe ", 0, 400);
-	cv::imshow( "Online " , imageB );
-	cvMoveWindow( "Online ", 600, 400 );
-	cv::waitKey(30);
+	cv::imshow( "Current keyframe" , imageA);
+	cvMoveWindow( "Current keyframe", 0, 400);
+	cv::imshow( "Online" , imageB );
+	cvMoveWindow( "Online", 600, 400 );
+	cv::waitKey(1);
 
 	// If number of tracked > 70 then the new frame is almost the old one, so no
 	// need to put it as it will add very little info, also if tracked is less than
 	// 10 then we can't produce good results
-	if(tracked > 50 || tracked < 10)
+	if(tracked > threshold || tracked < 10)
 		return false;
 
 	// Collect the successfully tracked points with their z indices to be used
@@ -79,7 +78,7 @@ bool Alignment::getInitialTransformation(cv::Mat *colorA, cv::Mat *colorB, cv::M
 // to the second frame, then use Horn's method to find a rigid transformation between the 
 // first and the second, this transformation is then inversed.
 bool Alignment::getInitialTransformationSURF(cv::Mat *colorA, cv::Mat *colorB, cv::Mat *depthA, cv::Mat *depthB, Transformation *inverse,
-				 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA, pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB)
+				 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudA, pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudB, int threshold)
 {
 	Tracker tracker;
 	//cout << "Tracking.. " << endl ;
@@ -107,12 +106,12 @@ bool Alignment::getInitialTransformationSURF(cv::Mat *colorA, cv::Mat *colorB, c
 	cvMoveWindow( "Current keyframe ", 0, 400);
 	cv::imshow( "Online " , imageB );
 	cvMoveWindow( "Online ", 600, 400 );
-	cv::waitKey(30);
+	cv::waitKey(1);
 
 	// If number of tracked > 70 then the new frame is almost the old one, so no
 	// need to put it as it will add very little info, also if tracked is less than
 	// 10 then we can't produce good results
-	if(matches.size() > 100 || matches.size() < 10)
+	if(matches.size() > threshold || matches.size() < 10)
 		return false;
 
 	// Collect the successfully tracked points with their z indices to be used

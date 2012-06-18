@@ -19,7 +19,7 @@ SLAM systems can be described as iterative systems as the second frame is aligne
 We explain briefly the main steps of the pipeline, each step is explained in more details in following chapters:
 
 \subsection{Frame Acquisition}
-   We use the OpenNI library to obtain the current viewed scene by Kinect, this scene is represented as a 3D point cloud, for each point we have the $x, y and  z$ coordinates in meters along with the RGB components of the pixel color.
+   We use the OpenNI library to obtain the current viewed scene by Kinect, this scene is represented as a 3D point cloud, for each point we have the $x$, $y$ and $z$ coordinates in meters along with the RGB components of the pixel color.
    The captured point cloud is then converted into two images; one representing the colored scene and another containing the depth information for each pixel, this step is done so that we can use these images later for feature tracking.
 
 \subsection{Feature Tracking}
@@ -40,7 +40,7 @@ We explain briefly the main steps of the pipeline, each step is explained in mor
 The following figure summarizes the general pipeline:
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.45,keepaspectratio=true]{System_Analysis_and_Design/pipeline.png}
+\includegraphics[height=170mm]{System_Analysis_and_Design/pipeline.png}
 \caption{System Pipeline}
 \label{fig:system_pipeline}
 \end{figure}
@@ -52,10 +52,10 @@ We divide our system to a number of components, each component is responsible fo
 Each component is implemented in a class that offers methods that are used by other components, here is a list of classes and their descriptions:
 
 \begin{itemize}
-  \item Transformation: a data class that represents a 3D transformation
-  \item HornMethod: this class contains the code needed to calculate the best transformation between two sets of 3D points
-  \item Tracker: this class provides feature tracking using optical flow and 	SURF feature detection and matching
-  \item Alignment: this class has functions that uses the previous components to obtain an initial transformation
+  \item Transformation: a data class that represents a 3D transformation.
+  \item HornMethod: this class contains the code needed to calculate the best transformation between two sets of 3D points.
+  \item Tracker: this class provides feature tracking using optical flow and 	SURF feature detection and matching.
+  \item Alignment: this class has functions that use the previous components to obtain an initial transformation between two consecutive frames.
   \item SurfaceConstruction:
   \item Segmentation:
 
@@ -68,4 +68,19 @@ Each component is implemented in a class that offers methods that are used by ot
 \label{fig:class_diagram}
 \end{figure}
 
-\subsection{Libraries and tools}
+\pagebreak
+\section{Libraries and tools}
+
+It is well known that SLAM systems are expensive both in computation and memory usage, this is why it was necessary to choose a development path that will achieve both. We have chosen C++ as our programming language as it is the fastest high level programming language and is supported by many projects such as OpenCV and Point Cloud Library (PCL).
+
+\subsection{OpenCV}
+
+OpenCV is a library of programming functions mainly aimed at real time computer vision, developed by Intel and now supported by Willow Garage. It is free for use under the open source BSD license. The library is cross-platform. It focuses mainly on real-time image processing. If the library finds Intel's Integrated Performance Primitives on the system, it will use these proprietary optimized routines to accelerate itself.
+
+We use the C++ implementaion of OpenCV extensively in our project, we use it for storing images in data structures, feature extraction and tracking, RANSAC operations and image viewing.
+
+\subsection{PCL}
+
+PCL is a large scale, open project for 3D point cloud processing. The PCL framework contains numerous state-of-the art algorithms including filtering, feature estimation, surface reconstruction, registration, model fitting and segmentation. These algorithms can be used, for example, to filter outliers from noisy data, stitch 3D point clouds together, segment relevant parts of a scene, extract keypoints and compute descriptors to recognize objects in the world based on their geometric appearance, and create surfaces from point clouds and visualize them -- to name a few.
+
+We use PCL to store and view 3D point clouds, use its Iterative Closest Point implementation, use its Explicit Loop Closing Heuristic, also it contains useful data structures such as k-d trees.
