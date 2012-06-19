@@ -10,27 +10,37 @@
 \contentsline {figure}{\numberline {3.1}{\ignorespaces System Pipeline}}{21}
 \contentsline {figure}{\numberline {3.2}{\ignorespaces Class Diagram}}{23}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces One coordinate system transformed to the other}}{26}
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Gimbal lock happens when two rotation axes are in the same plane}}{28}
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Maixmizing the sum $ \DOTSB \sum@ \slimits@ {i=1}^{n} p'_{r,i} \cdot Rp'_{l,i} $ is equivalent to maximizing $ \DOTSB \sum@ \slimits@ {i=1}^{n} | p'_{r,i} | |Rp'_{l,i}| \qopname \relax o{cos}\theta $. This sum is maximized when $\qopname \relax o{cos}\theta = 1$, $\theta =0$. Gemoetrically we compute the rotation which minimizes the angle between the two vectors}}{31}
-\contentsline {figure}{\numberline {4.4}{\ignorespaces We notice that most features are concentrated in the parts that contains chairs while the wall on the right has no features matched}}{33}
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Areas marked with yellow show how alignment fails in featureless areas}}{34}
-\contentsline {figure}{\numberline {4.6}{\ignorespaces Iterative closest point used to align two point clouds}}{35}
-\contentsline {figure}{\numberline {4.7}{\ignorespaces A QVGA scene of a bed without downsampling}}{37}
-\contentsline {figure}{\numberline {4.8}{\ignorespaces A QVGA scene of a bed after downsampling}}{38}
-\contentsline {figure}{\numberline {4.9}{\ignorespaces Applying ICP after using Horn's method result as an initial guess, the results are clearly better than the one obtained only with Horn's method in Figure \nobreakspace {}4.5\hbox {} }}{39}
-\contentsline {figure}{\numberline {4.10}{\ignorespaces Constructed scene from two different viewpoints}}{41}
-\contentsline {figure}{\numberline {4.11}{\ignorespaces Constructed scene from two different viewpoints}}{43}
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Kinect for Xbox 360}}{25}
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Underlying technology of Kinect }}{26}
+\contentsline {figure}{\numberline {4.3}{\ignorespaces A figure showing depth color on the left with its correspondent RGB image, the brighter the pixel the closer it is, while out of range pixels are represented in black}}{27}
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Precision of the Kinect measuring depth}}{30}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Because of accumlating alignment errors, the last estimated pose is far from where the real pose is}}{45}
-\contentsline {figure}{\numberline {5.2}{\ignorespaces Highlighted areas are duplicate objects that are not aligned as they should be because of accumlative numerical errors and false matches}}{46}
-\contentsline {figure}{\numberline {5.3}{\ignorespaces k-d tree with d = 2, this tree was built by inserting (7,2), (9,6), (5,4), (2,3), (4,7) and (8,1)}}{48}
-\contentsline {figure}{\numberline {5.4}{\ignorespaces The decompsition of the k-d tree in fig \nobreakspace {}5.3\hbox {}}}{49}
-\contentsline {figure}{\numberline {5.5}{\ignorespaces The root of the tree which is node 1 splits the space vertically into two parts; one containing all points on the left of point 1 and one containing all points on the right of point 1, the same is for node 3 which splites the space horizontally and node 6 that splits the space vertically }}{50}
-\contentsline {figure}{\numberline {5.6}{\ignorespaces Here we search for any nodes that fall in the pink rectangluar, It is clear that the region rectangle intersects with the right side of point 1 and not with the left side of point 1, so we investigate only the right subtree starting at node 3, there we find that e the point below point 3 falls into the region and the subtree starting also intersects with the region so we investigate it and find that only the point g falls in the region}}{51}
-\contentsline {figure}{\numberline {5.7}{\ignorespaces Feature matching between the first and last frame in the scanning }}{52}
-\contentsline {figure}{\numberline {5.8}{\ignorespaces This is the first frame in a scanning process }}{53}
-\contentsline {figure}{\numberline {5.9}{\ignorespaces This is the last frame in scanning process, we notice that the last frame is similar to the first frame}}{54}
-\contentsline {figure}{\numberline {5.10}{\ignorespaces The red spheres represent the pose estimations that form the loop}}{55}
-\contentsline {figure}{\numberline {5.11}{\ignorespaces Highlighted areas are duplicate objects that are not aligned as they should be because of accumlative numerical errors and false matches}}{57}
-\contentsline {figure}{\numberline {5.12}{\ignorespaces After applying ELCH, we notice how noise and duplication from the marked area compared with the constructed scene before applying ELCH in fig \nobreakspace {}5.11\hbox {} }}{58}
+\contentsline {figure}{\numberline {5.1}{\ignorespaces One coordinate system transformed to the other}}{34}
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Gimbal lock happens when two rotation axes are in the same plane}}{36}
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Maixmizing the sum $ \DOTSB \sum@ \slimits@ {i=1}^{n} p'_{r,i} \cdot Rp'_{l,i} $ is equivalent to maximizing $ \DOTSB \sum@ \slimits@ {i=1}^{n} | p'_{r,i} | |Rp'_{l,i}| \qopname \relax o{cos}\theta $. This sum is maximized when $\qopname \relax o{cos}\theta = 1$, $\theta =0$. Gemoetrically we compute the rotation which minimizes the angle between the two vectors}}{39}
+\contentsline {figure}{\numberline {5.4}{\ignorespaces We notice that most features are concentrated in the parts that contains chairs while the wall on the right has no features matched}}{41}
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Areas marked with yellow show how alignment fails in featureless areas}}{42}
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Iterative closest point used to align two point clouds}}{43}
+\contentsline {figure}{\numberline {5.7}{\ignorespaces A QVGA scene of a bed without downsampling}}{45}
+\contentsline {figure}{\numberline {5.8}{\ignorespaces A QVGA scene of a bed after downsampling}}{46}
+\contentsline {figure}{\numberline {5.9}{\ignorespaces Applying ICP after using Horn's method result as an initial guess, the results are clearly better than the one obtained only with Horn's method in Figure \nobreakspace {}5.5\hbox {} }}{47}
+\contentsline {figure}{\numberline {5.10}{\ignorespaces Constructed scene from two different viewpoints}}{49}
+\contentsline {figure}{\numberline {5.11}{\ignorespaces Constructed scene from two different viewpoints}}{51}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Because of accumlating alignment errors, the last estimated pose is far from where the real pose is}}{53}
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Highlighted areas are duplicate objects that are not aligned as they should be because of accumlative numerical errors and false matches}}{54}
+\contentsline {figure}{\numberline {6.3}{\ignorespaces k-d tree with d = 2, this tree was built by inserting (7,2), (9,6), (5,4), (2,3), (4,7) and (8,1)}}{56}
+\contentsline {figure}{\numberline {6.4}{\ignorespaces The decompsition of the k-d tree in fig \nobreakspace {}6.3\hbox {}}}{57}
+\contentsline {figure}{\numberline {6.5}{\ignorespaces The root of the tree which is node 1 splits the space vertically into two parts; one containing all points on the left of point 1 and one containing all points on the right of point 1, the same is for node 3 which splites the space horizontally and node 6 that splits the space vertically }}{58}
+\contentsline {figure}{\numberline {6.6}{\ignorespaces Here we search for any nodes that fall in the pink rectangluar, It is clear that the region rectangle intersects with the right side of point 1 and not with the left side of point 1, so we investigate only the right subtree starting at node 3, there we find that e the point below point 3 falls into the region and the subtree starting also intersects with the region so we investigate it and find that only the point g falls in the region}}{59}
+\contentsline {figure}{\numberline {6.7}{\ignorespaces Feature matching between the first and last frame in the scanning }}{60}
+\contentsline {figure}{\numberline {6.8}{\ignorespaces This is the first frame in a scanning process }}{61}
+\contentsline {figure}{\numberline {6.9}{\ignorespaces This is the last frame in scanning process, we notice that the last frame is similar to the first frame}}{62}
+\contentsline {figure}{\numberline {6.10}{\ignorespaces The red spheres represent the pose estimations that form the loop}}{63}
+\contentsline {figure}{\numberline {6.11}{\ignorespaces Highlighted areas are duplicate objects that are not aligned as they should be because of accumlative numerical errors and false matches}}{65}
+\contentsline {figure}{\numberline {6.12}{\ignorespaces After applying ELCH, we notice how noise and duplication from the marked area compared with the constructed scene before applying ELCH in fig \nobreakspace {}6.11\hbox {} }}{66}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Kinect for Windows}}{68}
+\contentsline {figure}{\numberline {7.2}{\ignorespaces Kinect for Xbox}}{68}
+\contentsline {figure}{\numberline {7.3}{\ignorespaces HTC EVO 3D uses two cameras to record 3D videos}}{68}
+\contentsline {figure}{\numberline {7.4}{\ignorespaces Nokia 808 Pure View that can take shots up to 41 mega pixels}}{68}
